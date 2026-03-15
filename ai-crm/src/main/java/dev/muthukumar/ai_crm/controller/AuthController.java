@@ -3,7 +3,7 @@ package dev.muthukumar.ai_crm.controller;
 import dev.muthukumar.ai_crm.model.User;
 import dev.muthukumar.ai_crm.repository.UserRepository;
 import dev.muthukumar.ai_crm.service.UserService;
-import dev.muthukumar.ai_crm.utils.JwtUtil;
+import dev.muthukumar.ai_crm.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
@@ -76,19 +75,30 @@ public class AuthController {
         String email = body.get("email");
         String password = body.get("password");
 
-        if (userRepository.findByEmail(email).isEmpty()) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
             return new ResponseEntity<>("User not found!", HttpStatus.UNAUTHORIZED);
         }
 
-        User user = userRepository.findByEmail(email).get();
+        User user = userOpt.get();
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            return new ResponseEntity<>("Invalid user!", HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>("Invalid credentials!", HttpStatus.UNAUTHORIZED);
         }
 
         String token = jwtUtil.generateToken(email);
-        return ResponseEntity.ok(Map.of("token", token));
 
+        // Return token + user info (frontend needs this)
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "data", Map.of(
+                        "token",  token,
+                        "userId", user.getId(),
+                        "name",   user.getName(),
+                        "email",  user.getEmail(),
+                        "role",   user.getRole() != null ? user.getRole().toString() : "STAFF"
+                )
+        ));
     }
 
 }

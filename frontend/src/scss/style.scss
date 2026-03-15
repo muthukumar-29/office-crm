@@ -1,4 +1,5 @@
-@use "@coreui/coreui/scss/coreui" as * with ( 
+// src/scss/style.scss — REPLACE
+@use "@coreui/coreui/scss/coreui" as * with (
   $enable-deprecation-messages: false,
 );
 @use "@coreui/chartjs/scss/coreui-chartjs";
@@ -17,7 +18,7 @@ body {
 
 .header > .container-fluid,
 .sidebar-header {
-  min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+  min-height: calc(4rem + 1px);
 }
 
 .sidebar-brand-full {
@@ -29,11 +30,10 @@ body {
     --cui-nav-underline-border-link-padding-x: 1rem;
     --cui-nav-underline-border-gap: 0;
   }
-
   .nav-link {
     display: flex;
     align-items: center;
-    min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+    min-height: calc(4rem + 1px);
   }
 }
 
@@ -53,14 +53,13 @@ body {
 }
 
 .footer {
-  min-height: calc(3rem + 1px); // stylelint-disable-line function-disallowed-list
+  min-height: calc(3rem + 1px);
 }
 
 @include color-mode(dark) {
   body {
     background-color: var(--cui-dark-bg-subtle);
   }
-
   .footer {
     --cui-footer-bg: var(--cui-body-bg);
   }

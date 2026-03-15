@@ -3,48 +3,59 @@ package dev.muthukumar.ai_crm.controller;
 import dev.muthukumar.ai_crm.model.Allocation;
 import dev.muthukumar.ai_crm.service.AllocationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
+// REPLACE existing AllocationController.java with this
 @RestController
-@RequestMapping("/api/allocate")
+@RequestMapping("/api/allocations")
 @RequiredArgsConstructor
 public class AllocationController {
 
     private final AllocationService allocationService;
 
     @PostMapping
-    public ResponseEntity<Allocation> create(@RequestBody Allocation allocation){
-        return new ResponseEntity<>(allocationService.create(allocation), HttpStatus.CREATED);
+    public ResponseEntity<?> create(@RequestBody Map<String, Object> body) {
+        Allocation a = allocationService.create(body);
+        return ResponseEntity.ok(Map.of("success", true, "message", "Allocated successfully", "data", a));
     }
 
     @GetMapping
-    public ResponseEntity<List<Allocation>> getAll(){
-        return new ResponseEntity<>(allocationService.getAll(), HttpStatus.OK);
+    public ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(Map.of("success", true, "data", allocationService.getAll()));
     }
 
-    @GetMapping("/page")
-    public ResponseEntity<Page<Allocation>> getByPages(@RequestParam int page, @RequestParam int size){
-        return new ResponseEntity<>(allocationService.getByPages(page, size), HttpStatus.OK);
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(Map.of("success", true, "data", allocationService.findById(id)));
     }
 
-    @GetMapping("/id/{id}")
-    public ResponseEntity<Allocation> getById(@PathVariable Long id){
-        return new ResponseEntity<>(allocationService.getById(id), HttpStatus.OK);
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<?> getByStudent(@PathVariable Long studentId) {
+        return ResponseEntity.ok(Map.of("success", true, "data", allocationService.getByStudent(studentId)));
     }
 
-    @PutMapping("/id/{id}")
-    public ResponseEntity<Allocation> update(@PathVariable Long id, @RequestBody Allocation allocation){
-        return new ResponseEntity<>(allocationService.update(id, allocation), HttpStatus.OK);
+    @GetMapping("/student/{studentId}/active")
+    public ResponseEntity<?> getActiveByStudent(@PathVariable Long studentId) {
+        return ResponseEntity.ok(Map.of("success", true, "data", allocationService.getActiveByStudent(studentId)));
     }
 
-    @DeleteMapping("/id/{id}")
-    public void delete(@PathVariable Long id){
-        allocationService.delete(id);
+    @GetMapping("/category/{category}")
+    public ResponseEntity<?> getByCategory(@PathVariable String category) {
+        return ResponseEntity.ok(Map.of("success", true, "data", allocationService.getByCategory(category)));
     }
 
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(Map.of("success", true, "message", "Status updated", "data", allocationService.updateStatus(id, body)));
+    }
+
+    // Dropdown resolver: GET /api/catalog/items?category=COURSE&domainId=2
+    @GetMapping("/catalog/items")
+    public ResponseEntity<?> getCatalogItems(@RequestParam String category, @RequestParam Long domainId) {
+        return ResponseEntity.ok(Map.of("success", true, "data", allocationService.getCatalogItems(category, domainId)));
+    }
 }

@@ -27,7 +27,7 @@ public class DomainService {
 
     public Domain update(Long id, Domain updated){
         Domain existing = getById(id);
-        existing.setTitle(updated.getTitle());
+        existing.setName(updated.getName());
         existing.setDescription(updated.getDescription());
         return domainRepository.save(existing);
     }

@@ -43,13 +43,18 @@ public class StudentService {
         return studentRepository.findAll(pageable);
     }
 
-    public Student update(Long id, Student student){
+    public Student update(Long id, Student student) {
         Student existing = getById(id);
         existing.setName(student.getName());
         existing.setEmail(student.getEmail());
         existing.setCollegeName(student.getCollegeName());
-        existing.setPhoneNumber(student.getPhoneNumber());
-        existing.setRollNumber(student.getRollNumber());
+        existing.setPhone(student.getPhone());
+        existing.setRollNo(student.getRollNo());
+        existing.setDepartment(student.getDepartment());
+        existing.setYear(student.getYear());
+        existing.setAddress(student.getAddress());
+        existing.setGuardianName(student.getGuardianName());
+        existing.setGuardianPhone(student.getGuardianPhone());
         return studentRepository.save(existing);
     }
 
@@ -58,8 +63,13 @@ public class StudentService {
         existing.setName(student.getName());
         existing.setEmail(student.getEmail());
         existing.setCollegeName(student.getCollegeName());
-        existing.setPhoneNumber(student.getPhoneNumber());
-        existing.setRollNumber(student.getRollNumber());
+        existing.setPhone(student.getPhone());
+        existing.setRollNo(student.getRollNo());
+        existing.setDepartment(student.getDepartment());
+        existing.setYear(student.getYear());
+        existing.setAddress(student.getAddress());
+        existing.setGuardianName(student.getGuardianName());
+        existing.setGuardianPhone(student.getGuardianPhone());
         return studentRepository.save(existing);
     }
 

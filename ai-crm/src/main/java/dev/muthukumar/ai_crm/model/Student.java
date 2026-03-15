@@ -1,9 +1,7 @@
 package dev.muthukumar.ai_crm.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -15,24 +13,38 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "student_id", nullable = false)
+    @Column(name = "student_id")
     private String studentId;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, name = "college_name")
+    @Column(name = "roll_no")
+    private String rollNo;          // was rollNumber
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "phone")
+    private String phone;           // was phoneNumber
+
+    @Column(name = "college_name")
     private String collegeName;
 
-    @Column(nullable = false, name = "roll_number")
-    private String rollNumber;
+    private String department;
 
-    @Column(nullable = false, name = "phone_number")
-    private String phoneNumber;
+    private String year;
 
-    @Column(nullable = false)
-    @Email
-    private String email;
+    private String address;
+
+    @Column(name = "guardian_name")
+    private String guardianName;
+
+    @Column(name = "guardian_phone")
+    private String guardianPhone;
+
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 
     @Column(updatable = false, name = "created_at")
     private LocalDateTime createdAt;
@@ -41,14 +53,14 @@ public class Student {
     private LocalDateTime updatedAt;
 
     @PrePersist
-    public void onCreate(){
+    public void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        if (this.isActive == null) this.isActive = true;
     }
 
     @PreUpdate
-    public void onUpdate(){
+    public void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
 }

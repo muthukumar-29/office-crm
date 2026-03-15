@@ -1,9 +1,6 @@
-import { create, getByPage, update, remove, getById } from "../crudService";
-
-const ALLOCATION_URL = "/allocation";
-
-export const createAllocation = (data) => create(ALLOCATION_URL, data);
-export const getAllocationById = (id) => getById(ALLOCATION_URL, id);
-export const getAllocationsByPage = (page, size) => getByPage(ALLOCATION_URL, page, size);
-export const updateAllocation = (id, data) => update(ALLOCATION_URL, id, data);
-export const deleteAllocation = (id) => remove(ALLOCATION_URL, id);
+import apiClient from '../apiClient'
+export const getAllAllocations = () => apiClient.get('/allocations')
+export const createAllocation = (d) => apiClient.post('/allocations', d)
+export const getAllocationsByStudent = (id) => apiClient.get(`/allocations/student/${id}`)
+export const updateAllocationStatus = (id, d) => apiClient.patch(`/allocations/${id}/status`, d)
+export const getCatalogItems = (cat, did) => apiClient.get(`/allocations/catalog/items?category=${cat}&domainId=${did}`)

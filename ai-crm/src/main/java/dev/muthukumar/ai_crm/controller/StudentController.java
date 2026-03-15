@@ -83,4 +83,9 @@ public class StudentController {
         studentService.deleteByStudentId(studentId);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Student>> search(@RequestParam String q) {
+        return ResponseEntity.ok(studentRepository.searchStudents(q));
+    }
+
 }

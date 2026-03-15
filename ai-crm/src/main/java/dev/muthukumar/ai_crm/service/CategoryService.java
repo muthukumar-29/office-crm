@@ -35,7 +35,7 @@ public class CategoryService {
 
     public Category update(Long id, Category updated){
         Category existing = getById(id);
-        existing.setTitle(updated.getTitle());
+        existing.setName(updated.getName());
         existing.setDescription(updated.getDescription());
         return categoryRepository.save(existing);
     }

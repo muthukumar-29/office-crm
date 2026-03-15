@@ -1,10 +1,6 @@
-import { create, getByPage, update, remove, getById } from "../crudService";
-
-const PROJECT_URL = "/project";
-
-export const createProject = (data) => create(PROJECT_URL, data);
-export const getProjectById = (id) => getById(PROJECT_URL + "/id", id);
-export const getProjectsByDomain = (id) => getById(PROJECT_URL+"/domainId", id);
-export const getProjectsByPage = (page, size) => getByPage(PROJECT_URL, page, size);
-export const updateProject = (id, data) => update(PROJECT_URL + "/id", id, data);
-export const deleteProject = (id) => remove(PROJECT_URL, id);
+import apiClient from '../apiClient'
+export const getAllProjects = () => apiClient.get('/project')
+export const getProjectsByDomain = (id) => apiClient.get(`/project/domainId/${id}`)
+export const createProject = (d) => apiClient.post('/project', d)
+export const updateProject = (id, d) => apiClient.put(`/project/id/${id}`, d)
+export const deleteProject = (id) => apiClient.delete(`/project/id/${id}`)

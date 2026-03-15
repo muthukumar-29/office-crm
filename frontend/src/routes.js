@@ -1,29 +1,35 @@
-import { element } from 'prop-types'
+// src/routes.js — REPLACE
 import React from 'react'
 
-const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
+const Dashboard      = React.lazy(() => import('./pages/Dashboard'))
+const Students       = React.lazy(() => import('./pages/Students'))
+const Users          = React.lazy(() => import('./pages/Users'))
+const Courses        = React.lazy(() => import('./pages/Courses'))
+const Interns        = React.lazy(() => import('./pages/Interns'))
+const Projects       = React.lazy(() => import('./pages/Projects'))
+const Allocations    = React.lazy(() => import('./pages/Allocations'))
+const Payments       = React.lazy(() => import('./pages/Payments'))
+const Certificates   = React.lazy(() => import('./pages/Certificates'))
+const Finance        = React.lazy(() => import('./pages/Finance'))
 
-const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
-
-const Intern = React.lazy(()=> import('./pages/Intern'))
-const Users = React.lazy(()=> import('./pages/Users'))
-const Students = React.lazy(()=> import('./pages/Students'))
-const Course = React.lazy(()=> import('./pages/Course'))
-const Project = React.lazy(()=> import('./pages/Project'))
-const Allocation = React.lazy(()=> import('./pages/Allocation'))
+// Placeholder pages for Invoices and Office Projects
+const Invoices       = React.lazy(() => import('./pages/Invoices'))
+const OfficeProjects = React.lazy(() => import('./pages/OfficeProjects'))
 
 const routes = [
-  { path: '/', exact: true, name: 'Home' },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-
-  {path: '/intern', name: 'Intern', element: Intern},
-  {path: '/users', name: 'Users', element: Users},
-  {path: '/students', name: 'Students', element: Students},
-  {path: '/course', name: 'course', element: Course},
-  {path: '/project', name: 'project', element: Project},
-  {path: '/allocate', name: 'allocation', element: Allocation},
-
-  { path: '/widgets', name: 'Widgets', element: Widgets },
+  { path: '/',                name: 'Home' },
+  { path: '/dashboard',       name: 'Dashboard',       element: Dashboard },
+  { path: '/students',        name: 'Students',        element: Students },
+  { path: '/users',           name: 'Users',           element: Users },
+  { path: '/courses',         name: 'Courses',         element: Courses },
+  { path: '/interns',         name: 'Internships',     element: Interns },
+  { path: '/projects',        name: 'Projects',        element: Projects },
+  { path: '/allocations',     name: 'Allocations',     element: Allocations },
+  { path: '/payments',        name: 'Payments',        element: Payments },
+  { path: '/certificates',    name: 'Certificates',    element: Certificates },
+  { path: '/invoices',        name: 'Invoices',        element: Invoices },
+  { path: '/office-projects', name: 'Office Projects', element: OfficeProjects },
+  { path: '/finance',         name: 'Finance',         element: Finance },
 ]
 
 export default routes

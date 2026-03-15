@@ -1,262 +1,149 @@
-import React, { useEffect, useState } from "react";
-import {
-  createStudent,
-  getStudentsByPage,
-  updateStudent,
-  deleteStudent
-} from "../api/services/studentService";
+// src/pages/Students.jsx — REPLACE
+import React, { useEffect, useState, useCallback } from 'react'
+import { getAllStudents, createStudent, updateStudent, deleteStudent, searchStudents } from '../api/services/studentService'
+import { Preloader, CrmPagination, CrmModal, PageHeader, Field, Input, EmptyState } from '../components/common/ui'
+import { usePagination } from '../utils/usePagination'
+import Toast from '../utils/toast'
+import Swal from 'sweetalert2'
 
-import Preloader from "../components/common/Preloader";
-
-import Swal from "sweetalert2";
-import Toast from "../utils/toast";
-import CIcon from "@coreui/icons-react";
-import { cilTrash, cilPen } from "@coreui/icons";
+const EMPTY = { name: '', rollNo: '', email: '', phone: '', collegeName: '', department: '', year: '', address: '', guardianName: '', guardianPhone: '' }
 
 export default function Students() {
+  const [all, setAll]           = useState([])
+  const [loading, setLoading]   = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [editId, setEditId]     = useState(null)
+  const [form, setForm]         = useState(EMPTY)
+  const [search, setSearch]     = useState('')
+  const { page, setPage, totalPages, pageData, reset } = usePagination(all, 10)
 
-  const [loading, setLoading] = useState(false);
-
-  const [students, setStudents] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-
-  const [form, setForm] = useState({
-    name: "",
-    collegeName: "",
-    rollNumber: "",
-    phoneNumber: "",
-    email: ""
-  });
-
-  const [editId, setEditId] = useState(null);
-
-  // Pagination
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const size = 5;
-
-  useEffect(() => {
-    loadStudents(page);
-  }, [page]);
-
-  const loadStudents = async (page) => {
+  const fetchAll = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await getStudentsByPage(page, size);
-      setStudents(res.data.content);
-      setTotalPages(res.data.totalPages);
-    } catch (err) {
-      Toast.fire({ icon: "error", title: "Failed to load students" });
-    } finally {
-      setLoading(false)
-    }
-  };
+      const res = await getAllStudents()
+      setAll(res.data?.data || res.data || []); reset()
+    } catch { Toast.fire({ icon: 'error', title: 'Failed to load students' }) }
+    finally { setLoading(false) }
+  }, [])
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  useEffect(() => { fetchAll() }, [fetchAll])
 
-  // 🔹 ADD / UPDATE
+  const doSearch = async () => {
+    if (!search.trim()) { fetchAll(); return }
+    setLoading(true)
+    try { const res = await searchStudents(search); setAll(res.data?.data || res.data || []); reset() }
+    catch { Toast.fire({ icon: 'error', title: 'Search failed' }) }
+    finally { setLoading(false) }
+  }
+
+  const ch = e => setForm({ ...form, [e.target.name]: e.target.value })
+
   const handleSave = async () => {
-
-    if (!form.name || !form.email) {
-      Toast.fire({ icon: "warning", title: "Name & Email are required" });
-      return;
-    }
-
+    if (!form.name || !form.email) { Toast.fire({ icon: 'warning', title: 'Name and Email required' }); return }
+    setLoading(true)
     try {
-      if (editId) {
-        await updateStudent(editId, form);
-        Toast.fire({ icon: "success", title: "Student updated" });
-      } else {
-        await createStudent(form);
-        Toast.fire({ icon: "success", title: "Student created" });
-      }
+      if (editId) { await updateStudent(editId, form); Toast.fire({ icon: 'success', title: 'Student updated' }) }
+      else        { await createStudent(form);          Toast.fire({ icon: 'success', title: 'Student created' }) }
+      reset_form(); fetchAll()
+    } catch (err) { Toast.fire({ icon: 'error', title: err.response?.data?.message || 'Save failed' }) }
+    finally { setLoading(false) }
+  }
 
-      resetForm();
-      loadStudents(page);
-
-    } catch (err) {
-      Toast.fire({ icon: "error", title: "Save failed" });
-    }
-  };
-
-  // 🔹 EDIT
-  const handleEdit = (student) => {
-    setEditId(student.id);
-    setForm({
-      name: student.name || "",
-      collegeName: student.collegeName || "",
-      rollNumber: student.rollNumber || "",
-      phoneNumber: student.phoneNumber || "",
-      email: student.email || ""
-    });
-    setShowModal(true);
-  };
-
-  // 🔹 DELETE
   const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This student will be permanently deleted!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete!"
-    });
+    const ok = await Swal.fire({ title: 'Delete student?', text: 'This action cannot be undone.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Delete', background: 'var(--surface-2)', color: 'var(--text-primary)' })
+    if (!ok.isConfirmed) return
+    try { await deleteStudent(id); Toast.fire({ icon: 'success', title: 'Deleted' }); fetchAll() }
+    catch { Toast.fire({ icon: 'error', title: 'Delete failed' }) }
+  }
 
-    if (!result.isConfirmed) return;
+  const reset_form = () => { setForm(EMPTY); setEditId(null); setShowModal(false) }
+  const openEdit   = (s) => { setEditId(s.id); setForm({ name: s.name||'', rollNo: s.rollNo||'', email: s.email||'', phone: s.phone||'', collegeName: s.collegeName||'', department: s.department||'', year: s.year||'', address: s.address||'', guardianName: s.guardianName||'', guardianPhone: s.guardianPhone||'' }); setShowModal(true) }
 
-    try {
-      await deleteStudent(id);
-      Toast.fire({ icon: "success", title: "Student deleted" });
-      loadStudents(page);
-    } catch (err) {
-      Toast.fire({ icon: "error", title: "Delete failed" });
-    }
-  };
-
-  const resetForm = () => {
-    setForm({
-      name: "",
-      collegeName: "",
-      rollNumber: "",
-      phoneNumber: "",
-      email: ""
-    });
-    setEditId(null);
-    setShowModal(false);
-  };
+  const FIELDS = [
+    { l: 'Full Name *', n: 'name' }, { l: 'Roll No', n: 'rollNo' },
+    { l: 'Email *', n: 'email', t: 'email' }, { l: 'Phone', n: 'phone' },
+    { l: 'College Name', n: 'collegeName' }, { l: 'Department', n: 'department' },
+    { l: 'Year', n: 'year' }, { l: 'Address', n: 'address' },
+    { l: 'Guardian Name', n: 'guardianName' }, { l: 'Guardian Phone', n: 'guardianPhone' },
+  ]
 
   return (
-    <div className="container mt-4">
-
+    <div>
       <Preloader show={loading} />
+      <PageHeader
+        title="Students"
+        subtitle={`${all.length} students registered`}
+        actions={
+          <button className="btn-crm-primary" onClick={() => { reset_form(); setShowModal(true) }}>+ Add Student</button>
+        }
+      />
 
-      {/* Add Button */}
-      <div className="mb-3">
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          + Add Student
-        </button>
+      {/* Search */}
+      <div className="card mb-3">
+        <div className="card-body" style={{ padding: '0.75rem 1.25rem' }}>
+          <div className="d-flex gap-2">
+            <input className="crm-input" style={{ maxWidth: 340 }} placeholder="Search by name, email or roll no…"
+              value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && doSearch()} />
+            <button className="btn-crm-primary" onClick={doSearch}>Search</button>
+            {search && <button className="btn-crm-ghost" onClick={() => { setSearch(''); fetchAll() }}>Clear</button>}
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="card">
+        <div className="card-body" style={{ padding: 0 }}>
+          <table className="crm-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Name</th><th>Roll No</th><th>College</th><th>Email</th><th>Phone</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageData.length === 0 ? <EmptyState message="No students found" /> :
+                pageData.map((s, i) => (
+                  <tr key={s.id}>
+                    <td style={{ color: 'var(--text-muted)' }}>{page * 10 + i + 1}</td>
+                    <td>
+                      <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{s.name}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{s.studentId}</div>
+                    </td>
+                    <td>{s.rollNo || '—'}</td>
+                    <td>{s.collegeName}</td>
+                    <td>{s.email}</td>
+                    <td>{s.phone}</td>
+                    <td>
+                      <div className="d-flex gap-1">
+                        <button className="btn-crm-icon success" title="Edit" onClick={() => openEdit(s)}>✎</button>
+                        <button className="btn-crm-icon danger" title="Delete" onClick={() => handleDelete(s.id)}>✕</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+        <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--border-subtle)' }}>
+          <CrmPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        </div>
       </div>
 
       {/* Modal */}
-      {showModal && (
-        <>
-          <div
-            className="modal-backdrop fade show"
-            onClick={resetForm}   // 👈 click outside closes modal
-          ></div>
-          <div className="modal show fade d-block" tabIndex="-1" onClick={resetForm}>
-            <div className="modal-dialog modal-lg" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-content">
-
-                <div className="modal-header">
-                  <h5 className="modal-title">
-                    {editId ? "Edit Student" : "Add Student"}
-                  </h5>
-                  <button className="btn-close" onClick={resetForm}></button>
-                </div>
-
-                <div className="modal-body">
-                  <div className="row g-3">
-
-                    <div className="col-md-6">
-                      <label>Name</label>
-                      <input name="name" className="form-control" value={form.name} onChange={handleChange} />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label>College Name</label>
-                      <input name="collegeName" className="form-control" value={form.collegeName} onChange={handleChange} />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label>Roll Number</label>
-                      <input name="rollNumber" className="form-control" value={form.rollNumber} onChange={handleChange} />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label>Phone Number</label>
-                      <input name="phoneNumber" className="form-control" value={form.phoneNumber} onChange={handleChange} />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label>Email</label>
-                      <input name="email" type="email" className="form-control" value={form.email} onChange={handleChange} />
-                    </div>
-
-                  </div>
-                </div>
-
-                <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={resetForm}>Cancel</button>
-                  <button className="btn btn-primary" onClick={handleSave}>
-                    {editId ? "Update" : "Save"}
-                  </button>
-                </div>
-
-              </div>
+      <CrmModal show={showModal} onClose={reset_form} title={editId ? 'Edit Student' : 'Add Student'} size="modal-lg"
+        footer={<>
+          <button className="btn-crm-ghost" onClick={reset_form}>Cancel</button>
+          <button className="btn-crm-primary" disabled={loading} onClick={handleSave}>{editId ? 'Update' : 'Save'}</button>
+        </>}>
+        <div className="row g-3">
+          {FIELDS.map(({ l, n, t = 'text' }) => (
+            <div key={n} className="col-md-6">
+              <Field label={l}>
+                <input className="crm-input" type={t} name={n} value={form[n]} onChange={ch} />
+              </Field>
             </div>
-          </div>
-        </>
-      )}
-
-      {/* Table */}
-      <table className="table table-bordered">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Student ID</th>
-            <th>Name</th>
-            <th>College</th>
-            <th>Roll No</th>
-            <th>Email</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {students.length === 0 ? (
-            <tr>
-              <td colSpan="7" className="text-center">No students found</td>
-            </tr>
-          ) : (
-            students.map((student, i) => (
-              <tr key={student.id}>
-                <td>{page * size + i + 1}</td>
-                <td>{student.studentId}</td>
-                <td>{student.name}</td>
-                <td>{student.collegeName}</td>
-                <td>{student.rollNumber}</td>
-                <td>{student.email}</td>
-                <td className="d-flex gap-2">
-                  <button className="btn btn-success btn-sm" onClick={() => handleEdit(student)}>
-                    <CIcon icon={cilPen} />
-                  </button>
-                  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(student.id)}>
-                    <CIcon icon={cilTrash} />
-                  </button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <ul className="pagination">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <li key={i} className={`page-item ${page === i ? "active" : ""}`}>
-              <button className="page-link" onClick={() => setPage(i)}>
-                {i + 1}
-              </button>
-            </li>
           ))}
-        </ul>
-      )}
-
+        </div>
+      </CrmModal>
     </div>
-  );
+  )
 }
