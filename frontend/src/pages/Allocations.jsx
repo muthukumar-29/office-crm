@@ -35,6 +35,8 @@ export default function Allocations() {
     setLoading(true)
     try {
       const [aRes, sRes, dRes] = await Promise.all([getAllAllocations(), getAllStudents(), getAllDomains()])
+      console.log(dRes);
+      
       setAll(aRes.data?.data || aRes.data || [])
       setStudents(sRes.data?.data || sRes.data || [])
       setDomains(dRes.data?.data || dRes.data || [])

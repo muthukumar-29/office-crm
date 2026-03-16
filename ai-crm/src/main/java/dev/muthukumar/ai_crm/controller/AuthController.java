@@ -14,47 +14,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
     private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-//    @PostMapping("/register")
-//    public ResponseEntity<String> registerUser(@RequestBody Map<String, String> body){
-//
-//        String email = body.get("email");
-//        String password = passwordEncoder.encode(body.get("password"));
-//
-//        if(userRepository.findByEmail(email).isPresent()){
-//            return new ResponseEntity<>("Email already exists", HttpStatus.CONFLICT);
-//        }
-//
-//        userService.create(User.builder().email(email).password(password).build());
-//
-//        return new ResponseEntity<>("Registered Successfully", HttpStatus.CREATED);
-//
-//    }
-
     public static String generateUserId() {
-        long time = System.currentTimeMillis() % 100000000; // last 8 digits of time
-        String timePart = Long.toString(time, 36); // base36 for compactness
-
-        int random = ThreadLocalRandom.current().nextInt(36 * 36); // 2 chars
+        long time = System.currentTimeMillis() % 100000000;
+        String timePart = Long.toString(time, 36);
+        int random = ThreadLocalRandom.current().nextInt(36 * 36);
         String randomPart = Integer.toString(random, 36);
-
-        return "AI-EMP-" + timePart + randomPart; // max ~10 chars
+        return "AI-EMP-" + timePart + randomPart;
     }
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody User user) {
-
         user.setUserId(generateUserId());
         String email = user.getEmail();
         String password = passwordEncoder.encode(user.getPassword());
@@ -65,22 +46,19 @@ public class AuthController {
         }
 
         userService.create(user);
-
         return new ResponseEntity<>("Registered Successfully", HttpStatus.CREATED);
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         String password = body.get("password");
 
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
+        if (userRepository.findByEmail(email).isEmpty()) {
             return new ResponseEntity<>("User not found!", HttpStatus.UNAUTHORIZED);
         }
 
-        User user = userOpt.get();
+        User user = userRepository.findByEmail(email).get();
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             return new ResponseEntity<>("Invalid credentials!", HttpStatus.UNAUTHORIZED);
@@ -88,17 +66,16 @@ public class AuthController {
 
         String token = jwtUtil.generateToken(email);
 
-        // Return token + user info (frontend needs this)
+        // ✅ Fixed: return full user info so frontend can store role/name/userId
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", Map.of(
                         "token",  token,
-                        "userId", user.getId(),
+                        "userId", user.getUserId(),
                         "name",   user.getName(),
                         "email",  user.getEmail(),
-                        "role",   user.getRole() != null ? user.getRole().toString() : "STAFF"
+                        "role",   user.getRole() != null ? user.getRole().name() : "EMPLOYEE"
                 )
         ));
     }
-
 }

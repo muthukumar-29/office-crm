@@ -12,8 +12,12 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
+
     private final String SECRET = "java, spring and now spring boot which is springs framework which is muthu code";
+
+    // ✅ Fixed: was 1000 * 60 = 1 minute. Now 24 hours.
     private final long EXPIRATION = 1000L * 60 * 60 * 24;
+
     private final Key secretKey = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
 
     public String generateToken(String email) {
