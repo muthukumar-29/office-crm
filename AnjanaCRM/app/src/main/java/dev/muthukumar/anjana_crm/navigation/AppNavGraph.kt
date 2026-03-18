@@ -2,7 +2,6 @@ package dev.muthukumar.anjana_crm.navigation
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,37 +19,34 @@ fun AppNavGraph() {
     val store = remember { TokenStore(context) }
     val navController = rememberNavController()
 
-    // Decide start destination based on stored token
     val startDest = remember {
         val token = runBlocking { store.token.first() }
         val role  = runBlocking { store.role.first() }
-        if (token == null) Screen.Login.route
-        else roleStartScreen(role)
+        if (token == null) Screen.Login.route else roleStartScreen(role)
     }
 
     NavHost(navController = navController, startDestination = startDest) {
 
-        // ── Auth ──────────────────────────────────────────────────────────────
         composable(Screen.Login.route) {
-            LoginScreen(
-                onLoginSuccess = { role ->
-                    navController.navigate(roleStartScreen(role)) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
+            LoginScreen(onLoginSuccess = { role ->
+                navController.navigate(roleStartScreen(role)) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
                 }
-            )
+            })
         }
 
-        // ── Admin / Super Admin ───────────────────────────────────────────────
-        composable(Screen.AdminDashboard.route)   { AdminDashboardScreen(navController) }
-        composable(Screen.AdminAllocations.route) { AdminAllocationsScreen(navController) }
-        composable(Screen.AdminStudents.route)    { AdminStudentsScreen(navController) }
-        composable(Screen.AdminCertificate.route) { AdminCertificateScreen(navController) }
-        composable(Screen.AdminSalary.route)      { AdminSalaryScreen(navController) }
-        composable(Screen.AdminInvoice.route)     { AdminInvoiceScreen(navController) }
-        composable(Screen.AdminFinance.route)     { AdminFinanceScreen(navController) }
+        // ── Admin / Super Admin ───────────────────────────────
+        composable(Screen.AdminDashboard.route)     { AdminDashboardScreen(navController) }
+        composable(Screen.AdminAllocations.route)   { AdminAllocationsScreen(navController) }
+        composable(Screen.AdminStudents.route)      { AdminStudentsScreen(navController) }
+        composable(Screen.AdminCertificate.route)   { AdminCertificateScreen(navController) }
+        composable(Screen.AdminSalary.route)        { AdminSalaryScreen(navController) }
+        composable(Screen.AdminInvoice.route)       { AdminInvoiceScreen(navController) }
+        composable(Screen.AdminFinance.route)       { AdminFinanceScreen(navController) }
+        composable(Screen.AdminProfile.route)       { AdminProfileScreen(navController) }
+        composable(Screen.AdminUsers.route)         { AdminUsersScreen(navController) }
 
-        // ── Employee ──────────────────────────────────────────────────────────
+        // ── Employee ──────────────────────────────────────────
         composable(Screen.EmployeeDashboard.route)   { EmployeeDashboardScreen(navController) }
         composable(Screen.EmployeeAllocations.route) { MyAllocationsScreen(navController) }
         composable(Screen.EmployeeProfile.route)     { EmployeeProfileScreen(navController) }
@@ -59,7 +55,7 @@ fun AppNavGraph() {
             UpdateStatusScreen(navController = navController, allocationId = id)
         }
 
-        // ── Student ───────────────────────────────────────────────────────────
+        // ── Student ───────────────────────────────────────────
         composable(Screen.StudentDashboard.route)   { StudentDashboardScreen(navController) }
         composable(Screen.StudentStatus.route)      { StudentStatusScreen(navController) }
         composable(Screen.StudentPayments.route)    { PaymentHistoryScreen(navController) }

@@ -11,148 +11,178 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.muthukumar.anjana_crm.navigation.roleStartScreen
-
-val BrandBlue   = Color(0xFF0A50B4)
-val BrandOrange = Color(0xFFE66414)
+import dev.muthukumar.anjana_crm.ui.theme.*
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: (role: String) -> Unit,
     vm: LoginViewModel = viewModel()
 ) {
-    val ui by vm.ui.collectAsState()
-    var email    by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val ui        by vm.ui.collectAsState()
+    var email     by remember { mutableStateOf("") }
+    var password  by remember { mutableStateOf("") }
+    var showPass  by remember { mutableStateOf(false) }
 
-    // Navigate when login succeeds
     LaunchedEffect(ui.role) {
         ui.role?.let { onLoginSuccess(it) }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0F172A))
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(OffWhite)
     ) {
-        // Brand header
-        Text(
-            text = "Anjana Infotech",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = Color(0xFF60A5FA)
-        )
-        Text(
-            text = "ISO 9001:2015 Certified",
-            fontSize = 12.sp,
-            color = Color(0xFF64748B),
-            modifier = Modifier.padding(top = 4.dp)
-        )
-        Text(
-            text = "Staff Portal",
-            fontSize = 14.sp,
-            color = Color(0xFF94A3B8),
-            modifier = Modifier.padding(top = 2.dp, bottom = 36.dp)
+        // Top gradient banner
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(280.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(BrandPurple, BrandMagenta)
+                    )
+                )
         )
 
-        // Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("Sign in", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+            Spacer(Modifier.height(60.dp))
 
-                // Error
-                ui.error?.let {
-                    Surface(
-                        color = Color(0x22EF4444),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = it,
-                            color = Color(0xFFEF4444),
-                            fontSize = 13.sp,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                        )
-                    }
-                }
+            // Logo
+            Text("AI", fontSize = 42.sp, fontWeight = FontWeight.ExtraBold, color = White)
+            Spacer(Modifier.height(4.dp))
+            Text("ANJANA INFOTECH", fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                color = White, letterSpacing = 2.sp)
+            Text("ISO 9001:2015 Certified", fontSize = 11.sp,
+                color = White.copy(alpha = 0.75f), letterSpacing = 1.sp)
 
-                // Email
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
-                    leadingIcon = { Icon(Icons.Default.Email, null) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = outlinedTextFieldColors(),
-                    shape = RoundedCornerShape(10.dp)
-                )
+            Spacer(Modifier.height(40.dp))
 
-                // Password
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Password") },
-                    leadingIcon = { Icon(Icons.Default.Lock, null) },
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = outlinedTextFieldColors(),
-                    shape = RoundedCornerShape(10.dp)
-                )
-
-                // Login button
-                Button(
-                    onClick = { vm.login(email, password) },
-                    enabled = !ui.loading && email.isNotBlank() && password.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandBlue)
+            // Login card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    if (ui.loading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
+                    Text("Welcome Back", fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold, color = OnSurface)
+                    Text("Sign in to your CRM account", fontSize = 13.sp, color = OnSurfaceMuted)
+
+                    // Error banner
+                    ui.error?.let {
+                        Surface(color = Color(0xFFFFE8E8), shape = RoundedCornerShape(10.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("⚠️", fontSize = 14.sp)
+                                Text(it, color = ErrorRed, fontSize = 13.sp)
+                            }
+                        }
+                    }
+
+                    // Email
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email address") },
+                        leadingIcon = { Icon(Icons.Default.Email, null, tint = BrandMagenta) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = loginFieldColors(),
+                        singleLine = true
+                    )
+
+                    // Password
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        leadingIcon = { Icon(Icons.Default.Lock, null, tint = BrandMagenta) },
+                        trailingIcon = {
+                            TextButton(onClick = { showPass = !showPass }) {
+                                Text(if (showPass) "Hide" else "Show",
+                                    color = BrandMagenta, fontSize = 12.sp)
+                            }
+                        },
+                        visualTransformation = if (showPass) VisualTransformation.None
+                        else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = loginFieldColors(),
+                        singleLine = true
+                    )
+
+                    // Sign In button
+                    Button(
+                        onClick = { vm.login(email, password) },
+                        enabled = !ui.loading && email.isNotBlank() && password.isNotBlank(),
+                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BrandMagenta,
+                            disabledContainerColor = BrandMagentaLight
                         )
-                    } else {
-                        Text("Sign in", fontWeight = FontWeight.SemiBold)
+                    ) {
+                        if (ui.loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(22.dp),
+                                color = White,
+                                strokeWidth = 2.5.dp
+                            )
+                        } else {
+                            Text("Sign In", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        }
                     }
                 }
             }
-        }
 
-        // Contact info
-        Spacer(Modifier.height(24.dp))
-        Text("372, Mudangiyar Road, Rajapalayam", fontSize = 11.sp, color = Color(0xFF475569))
-        Text("+91 97879 70633  |  info@anjanainfotech.in", fontSize = 11.sp, color = Color(0xFF475569))
+            Spacer(Modifier.weight(1f))
+
+            // Footer
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(bottom = 24.dp)
+            ) {
+                Text("372, Mudangiyar Road, Rajapalayam",
+                    fontSize = 11.sp, color = OnSurfaceHint)
+                Text("+91 97879 70633  |  info@anjanainfotech.in",
+                    fontSize = 11.sp, color = OnSurfaceHint)
+            }
+        }
     }
 }
 
 @Composable
-private fun outlinedTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor  = BrandBlue,
-    unfocusedBorderColor= Color(0xFF334155),
-    focusedLabelColor   = BrandBlue,
-    unfocusedLabelColor = Color(0xFF94A3B8),
-    cursorColor         = BrandBlue,
-    focusedTextColor    = Color.White,
-    unfocusedTextColor  = Color(0xFFCBD5E1),
-    focusedLeadingIconColor   = BrandBlue,
-    unfocusedLeadingIconColor = Color(0xFF64748B),
-    focusedContainerColor  = Color(0xFF0F172A),
-    unfocusedContainerColor= Color(0xFF0F172A)
+private fun loginFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor      = BrandMagenta,
+    unfocusedBorderColor    = Outline,
+    focusedLabelColor       = BrandMagenta,
+    unfocusedLabelColor     = OnSurfaceMuted,
+    cursorColor             = BrandMagenta,
+    focusedTextColor        = OnSurface,
+    unfocusedTextColor      = OnSurface,
+    focusedContainerColor   = White,
+    unfocusedContainerColor = White
 )

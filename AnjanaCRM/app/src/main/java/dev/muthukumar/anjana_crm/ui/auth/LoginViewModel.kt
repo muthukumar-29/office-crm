@@ -1,6 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-// LoginViewModel.kt
-// ─────────────────────────────────────────────────────────────
 package dev.muthukumar.anjana_crm.ui.auth
 
 import android.app.Application
@@ -11,6 +8,7 @@ import dev.muthukumar.anjana_crm.data.model.LoginRequest
 import dev.muthukumar.anjana_crm.data.store.TokenStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 data class LoginUiState(
@@ -25,29 +23,47 @@ class LoginViewModel(app: Application) : AndroidViewModel(app) {
     val ui = _ui.asStateFlow()
 
     init {
-        // Wire token to ApiClient interceptor
-        ApiClient.init { kotlinx.coroutines.runBlocking { store.token.collect { return@collect } ; null } }
+        // Wire token provider synchronously using first()
+        viewModelScope.launch {
+            val token = store.token.first()
+            ApiClient.init { kotlinx.coroutines.runBlocking { store.token.first() } }
+        }
     }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _ui.value = LoginUiState(loading = true)
             try {
-                val resp = ApiClient.service.login(LoginRequest(email, password))
+                val resp = ApiClient.service.login(LoginRequest(email.trim(), password))
                 val body = resp.body()
+
                 if (resp.isSuccessful && body?.success == true && body.data != null) {
                     val d = body.data
+                    // Save to DataStore
                     store.save(d.token, d.role, d.name, d.email, d.id.toString())
-                    // Re-init ApiClient with real token now stored
-                    ApiClient.init { kotlinx.coroutines.runBlocking {
-                        store.token.collect { return@collect }; null
-                    }}
+                    // Re-init ApiClient with the real token
+                    ApiClient.init { kotlinx.coroutines.runBlocking { store.token.first() } }
+                    // Signal success
                     _ui.value = LoginUiState(role = d.role)
                 } else {
-                    _ui.value = LoginUiState(error = "Invalid credentials")
+                    val msg = resp.errorBody()?.string()
+                    _ui.value = LoginUiState(
+                        error = if (msg?.contains("password", true) == true || resp.code() == 401)
+                            "Invalid email or password"
+                        else
+                            "Login failed (${resp.code()})"
+                    )
                 }
             } catch (e: Exception) {
-                _ui.value = LoginUiState(error = "Network error: ${e.message}")
+                val errorMsg = when {
+                    e.message?.contains("connect", true) == true ||
+                            e.message?.contains("refused", true) == true ->
+                        "Cannot reach server. Check if backend is running and BASE_URL is correct."
+                    e.message?.contains("timeout", true) == true ->
+                        "Connection timed out. Check your network."
+                    else -> "Network error: ${e.message}"
+                }
+                _ui.value = LoginUiState(error = errorMsg)
             }
         }
     }
