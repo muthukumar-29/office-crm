@@ -1,6 +1,5 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-
 import {
   CCloseButton,
   CSidebar,
@@ -9,14 +8,7 @@ import {
   CSidebarHeader,
   CSidebarToggler,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-
 import { AppSidebarNav } from './AppSidebarNav'
-
-import { logo } from 'src/assets/brand/logo'
-import { sygnet } from 'src/assets/brand/sygnet'
-
-// sidebar nav config
 import navigation from '../_nav'
 
 const AppSidebar = () => {
@@ -36,10 +28,26 @@ const AppSidebar = () => {
       }}
     >
       <CSidebarHeader className="border-bottom">
-        <CSidebarBrand to="/" className='text-decoration-none'>
-          {/* <CIcon customClassName="sidebar-brand-full" icon={logo} height={32} />
-          <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} /> */}
-          <h2> {import.meta.env.VITE_APP_NAME} </h2>
+        <CSidebarBrand to="/" className="text-decoration-none">
+          <div style={{ padding: '4px 0' }}>
+            <div style={{
+              fontSize: '1.05rem',
+              fontWeight: 800,
+              color: '#60a5fa',
+              letterSpacing: '-0.02em',
+              lineHeight: 1.1,
+            }}>
+              Anjana Infotech
+            </div>
+            <div style={{
+              fontSize: '0.65rem',
+              color: '#64748b',
+              marginTop: '2px',
+              letterSpacing: '0.04em',
+            }}>
+              ISO 9001:2015 Certified
+            </div>
+          </div>
         </CSidebarBrand>
         <CCloseButton
           className="d-lg-none"

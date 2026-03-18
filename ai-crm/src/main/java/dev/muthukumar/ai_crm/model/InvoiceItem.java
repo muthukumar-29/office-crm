@@ -6,9 +6,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 
+@Data
 @Entity
 @Table(name = "invoice_item")
-@Data
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class InvoiceItem {
 
@@ -30,6 +30,8 @@ public class InvoiceItem {
     @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPrice;
 
-    @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal amount;
+    // Column kept as 'total_price' in DB — named totalPrice in Java
+    // so InvoiceService.setTotalPrice() and PdfGeneratorUtil.getTotalPrice() both compile
+    @Column(name = "total_price", nullable = false, precision = 12, scale = 2)
+    private BigDecimal totalPrice;
 }

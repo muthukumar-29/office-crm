@@ -25,18 +25,18 @@ public class InvoiceService {
     private final AllocationRepository allocationRepo;
     private final AllocationService    allocationService;
 
-    // ── Get all (force-init lazy inside transaction) ──────────────────────────
+    // ── Get all ───────────────────────────────────────────────────────────────
     @Transactional(readOnly = true)
     public List<Invoice> getAll() {
         List<Invoice> all = invoiceRepo.findAll();
         for (Invoice inv : all) {
             if (inv.getAllocation() != null) {
-                inv.getAllocation().getId();                         // force proxy init
+                inv.getAllocation().getId();
                 if (inv.getAllocation().getStudent() != null)
                     inv.getAllocation().getStudent().getName();
             }
             if (inv.getItems() != null) {
-                inv.getItems().size();                              // force collection init
+                inv.getItems().size();
             }
         }
         return all;
@@ -47,7 +47,6 @@ public class InvoiceService {
     public Invoice create(Map<String, Object> body) {
         Invoice inv = new Invoice();
 
-        // Allocation-linked or manual
         if (body.get("allocationId") != null) {
             Long allocationId = Long.parseLong(body.get("allocationId").toString());
             if (invoiceRepo.findByAllocationId(allocationId).isPresent())
@@ -75,22 +74,23 @@ public class InvoiceService {
         if (dueDateStr != null) inv.setDueDate(LocalDate.parse(dueDateStr));
         if (body.get("notes") != null) inv.setNotes(body.get("notes").toString());
 
-        // ── Build line items (no pattern matching — plain casting) ────────────
-        List<InvoiceItem> items  = new ArrayList<>();
-        BigDecimal        subtotal = BigDecimal.ZERO;
+        // ── Build line items ──────────────────────────────────────────────────
+        List<InvoiceItem> items = new ArrayList<>();
+        BigDecimal subtotal = BigDecimal.ZERO;
 
         Object itemsRaw = body.get("items");
         if (itemsRaw instanceof List) {
             List<?> rawList = (List<?>) itemsRaw;
             for (Object o : rawList) {
                 if (o instanceof Map) {
-                    Map<?, ?> m = (Map<?, ?>) o;
+                    // Cast to Map<String, Object> — fixes "capture#1 of ?" compile error
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> m = (Map<String, Object>) o;
+
                     InvoiceItem item = new InvoiceItem();
-                    item.setDescription(String.valueOf(m.getOrDefault("description", "")));
-                    item.setQuantity(Integer.parseInt(
-                            String.valueOf(m.getOrDefault("quantity", "1"))));
-                    item.setUnitPrice(new BigDecimal(
-                            String.valueOf(m.getOrDefault("unitPrice", "0"))));
+                    item.setDescription(m.getOrDefault("description", "").toString());
+                    item.setQuantity(Integer.parseInt(m.getOrDefault("quantity", "1").toString()));
+                    item.setUnitPrice(new BigDecimal(m.getOrDefault("unitPrice", "0").toString()));
                     item.setTotalPrice(
                             item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
                     item.setInvoice(inv);
@@ -101,15 +101,15 @@ public class InvoiceService {
         }
 
         // ── Totals ────────────────────────────────────────────────────────────
-        BigDecimal discount   = body.get("discount")   != null
-                ? new BigDecimal(body.get("discount").toString())   : BigDecimal.ZERO;
+        BigDecimal discount = body.get("discount") != null
+                ? new BigDecimal(body.get("discount").toString()) : BigDecimal.ZERO;
         BigDecimal taxPercent = body.get("taxPercent") != null
                 ? new BigDecimal(body.get("taxPercent").toString()) : BigDecimal.ZERO;
-        BigDecimal afterDisc  = subtotal.subtract(discount);
-        BigDecimal taxAmount  = afterDisc
+        BigDecimal afterDisc = subtotal.subtract(discount);
+        BigDecimal taxAmount = afterDisc
                 .multiply(taxPercent)
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-        BigDecimal total      = afterDisc.add(taxAmount);
+        BigDecimal total = afterDisc.add(taxAmount);
 
         inv.setSubtotal(subtotal);
         inv.setDiscount(discount);
@@ -124,7 +124,6 @@ public class InvoiceService {
 
         Invoice saved = invoiceRepo.save(inv);
 
-        // Mark allocation as invoice-generated
         if (saved.getAllocation() != null) {
             saved.getAllocation().setInvoiceGenerated(true);
             allocationRepo.save(saved.getAllocation());

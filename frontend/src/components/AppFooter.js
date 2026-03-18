@@ -5,14 +5,15 @@ const AppFooter = () => {
   return (
     <CFooter className="px-4">
       <div>
-        <span className="ms-1">&copy; {new Date().getFullYear()} {import.meta.env.VITE_APP_NAME} </span>
+        <span className="ms-1">
+          &copy; {new Date().getFullYear()}&nbsp;
+          <strong style={{ color: '#60a5fa' }}>Anjana Infotech</strong>
+          &nbsp;— ISO 9001:2015 Certified
+        </span>
       </div>
-      {/* <div className="ms-auto">
-        <span className="me-1">Powered by</span>
-        <a href="https://coreui.io/react" target="_blank" rel="noopener noreferrer">
-          CoreUI React Admin &amp; Dashboard Template
-        </a>
-      </div> */}
+      <div className="ms-auto" style={{ fontSize: '0.75rem', color: '#64748b' }}>
+        info@anjanainfotech.in &nbsp;|&nbsp; +91 97879 70633
+      </div>
     </CFooter>
   )
 }

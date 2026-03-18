@@ -4,12 +4,10 @@ import CIcon from '@coreui/icons-react'
 import {
   cilSpeedometer, cilBook, cilApps, cilCode, cilUser, cilEducation,
   cilLink, cilCreditCard, cilDescription, cilMoney, cilBuilding,
-  cilChartPie, cilStar, cilCash,
+  cilChartPie, cilCash,
 } from '@coreui/icons'
-import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
+import { CNavItem, CNavTitle } from '@coreui/react'
 
-// Navigation is filtered by role in AppSidebarNav — all items defined here,
-// visibility controlled in the component via useAuth()
 const _nav = [
   {
     component: CNavItem,
@@ -85,18 +83,6 @@ const _nav = [
     component: CNavItem, name: 'Users',
     to: '/users',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-  },
-
-  { component: CNavTitle, name: 'Extras' },
-  {
-    component: CNavGroup,
-    name: 'Pages',
-    icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
-    items: [
-      { component: CNavItem, name: 'Login', to: '/login' },
-      { component: CNavItem, name: 'Error 404', to: '/404' },
-      { component: CNavItem, name: 'Error 500', to: '/500' },
-    ],
   },
 ]
 

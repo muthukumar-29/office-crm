@@ -1,8 +1,8 @@
 package dev.muthukumar.ai_crm.controller;
 
 import dev.muthukumar.ai_crm.service.CertificateService;
-import dev.muthukumar.ai_crm.util.PdfGeneratorUtil;
 import dev.muthukumar.ai_crm.model.Certificate;
+import dev.muthukumar.ai_crm.util.PdfGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

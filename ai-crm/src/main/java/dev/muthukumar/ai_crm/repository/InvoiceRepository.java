@@ -4,14 +4,15 @@ import dev.muthukumar.ai_crm.model.Invoice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import java.util.List;
+import java.util.Optional;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
-    @Query("""
-        SELECT DISTINCT i FROM Invoice i
-        LEFT JOIN FETCH i.student
-        LEFT JOIN FETCH i.items
-        ORDER BY i.id DESC
-    """)
-    List<Invoice> findAllWithDetails();
+    // Used by InvoiceService to check duplicate and fetch by allocation
+    Optional<Invoice> findByAllocationId(Long allocationId);
+
+    // Used by InvoiceService.generateInvoiceNumber()
+    @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(i.invoiceNumber, 5) AS int)), 0) " +
+            "FROM Invoice i WHERE i.invoiceNumber LIKE 'INV-%'")
+    Integer findMaxSequence();
 }
