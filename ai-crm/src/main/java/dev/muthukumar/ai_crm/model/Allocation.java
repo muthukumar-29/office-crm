@@ -1,19 +1,18 @@
 package dev.muthukumar.ai_crm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.muthukumar.ai_crm.enums.*;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
-/**
- * REPLACE the existing Allocation.java with this file.
- * This is the central pivot between a Student and a Course/Intern/Project.
- */
 @Data
 @Entity
 @Table(name = "allocation")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Allocation {
 
     @Id
@@ -22,25 +21,35 @@ public class Allocation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Student student;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AllocationCategory category;    // PROJECT | INTERN | COURSE
+    private AllocationCategory category;
 
-    // Only one of these will be set, depending on category
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Course course;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "intern_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Intern intern;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Project project;
 
+    /** Responsible employee for this student's course/intern/project */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_employee_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password"})
+    private User assignedEmployee;
+
+    // ── Schedule / timing (COURSE & INTERN) ─────────────────────────────────
     @Column(name = "start_date")
     private LocalDate startDate;
 
@@ -50,6 +59,15 @@ public class Allocation {
     @Column(name = "actual_end_date")
     private LocalDate actualEndDate;
 
+    /** Daily start time, e.g. 09:00 */
+    @Column(name = "class_start_time")
+    private LocalTime classStartTime;
+
+    /** Daily end time, e.g. 11:00 */
+    @Column(name = "class_end_time")
+    private LocalTime classEndTime;
+
+    // ── Finance ───────────────────────────────────────────────────────────────
     @Column(name = "total_fee", precision = 10, scale = 2)
     private BigDecimal totalFee;
 
@@ -67,7 +85,6 @@ public class Allocation {
     @Column(name = "allocation_status")
     private AllocationStatus allocationStatus = AllocationStatus.ACTIVE;
 
-    // Category-specific status
     @Enumerated(EnumType.STRING)
     @Column(name = "project_status")
     private ProjectStatus projectStatus;
@@ -101,15 +118,13 @@ public class Allocation {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        if (this.amountPaid == null) this.amountPaid = BigDecimal.ZERO;
-        if (this.paymentStatus == null) this.paymentStatus = PaymentStatus.PENDING;
-        if (this.allocationStatus == null) this.allocationStatus = AllocationStatus.ACTIVE;
+        if (this.amountPaid == null)        this.amountPaid        = BigDecimal.ZERO;
+        if (this.paymentStatus == null)     this.paymentStatus     = PaymentStatus.PENDING;
+        if (this.allocationStatus == null)  this.allocationStatus  = AllocationStatus.ACTIVE;
         if (this.certificateIssued == null) this.certificateIssued = false;
-        if (this.invoiceGenerated == null) this.invoiceGenerated = false;
+        if (this.invoiceGenerated == null)  this.invoiceGenerated  = false;
     }
 
     @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    protected void onUpdate() { this.updatedAt = LocalDateTime.now(); }
 }

@@ -11,33 +11,26 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
-/**
- * REPLACE the existing AllocationService.java with this file.
- */
 @Service
 @RequiredArgsConstructor
 public class AllocationService {
 
     private final AllocationRepository allocationRepo;
-    private final StudentRepository studentRepo;
-    private final CourseRepository courseRepo;
-    private final InternRepository internRepo;
-    private final ProjectRepository projectRepo;
+    private final StudentRepository    studentRepo;
+    private final CourseRepository     courseRepo;
+    private final InternRepository     internRepo;
+    private final ProjectRepository    projectRepo;
+    private final UserRepository       userRepo;
 
     // ── Create ──────────────────────────────────────────────────────────────
     @Transactional
     public Allocation create(Map<String, Object> body) {
-
-        Long studentId  = toLong(body.get("studentId"));
+        Long studentId = toLong(body.get("studentId"));
         String category = (String) body.get("category");
-        String startDate = (String) body.get("startDate");
-        String endDate   = body.get("endDate") != null ? (String) body.get("endDate") : null;
-        String notes     = body.get("notes") != null ? (String) body.get("notes") : null;
-        Object feeObj    = body.get("totalFee");
 
         Student student = studentRepo.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
@@ -45,12 +38,26 @@ public class AllocationService {
         Allocation a = new Allocation();
         a.setStudent(student);
         a.setCategory(AllocationCategory.valueOf(category));
-        a.setStartDate(LocalDate.parse(startDate));
-        if (endDate != null) a.setEndDate(LocalDate.parse(endDate));
-        if (notes != null) a.setNotes(notes);
 
-        BigDecimal feeOverride = feeObj != null
-                ? new BigDecimal(feeObj.toString()) : null;
+        if (body.get("startDate") != null) a.setStartDate(LocalDate.parse((String) body.get("startDate")));
+        if (body.get("endDate")   != null) a.setEndDate(LocalDate.parse((String) body.get("endDate")));
+        if (body.get("notes")     != null) a.setNotes((String) body.get("notes"));
+
+        // ── Assigned employee ────────────────────────────────────────────────
+        if (body.get("assignedEmployeeId") != null) {
+            Long empId = toLong(body.get("assignedEmployeeId"));
+            a.setAssignedEmployee(userRepo.findById(empId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User", empId)));
+        }
+
+        // ── Timing (COURSE / INTERN) ─────────────────────────────────────────
+        if (body.get("classStartTime") != null)
+            a.setClassStartTime(LocalTime.parse((String) body.get("classStartTime")));
+        if (body.get("classEndTime") != null)
+            a.setClassEndTime(LocalTime.parse((String) body.get("classEndTime")));
+
+        Object feeObj = body.get("totalFee");
+        BigDecimal feeOverride = feeObj != null ? new BigDecimal(feeObj.toString()) : null;
 
         switch (AllocationCategory.valueOf(category)) {
             case COURSE -> {
@@ -59,10 +66,8 @@ public class AllocationService {
                 Course course = courseRepo.findById(courseId)
                         .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
                 a.setCourse(course);
-                BigDecimal fee = feeOverride != null ? feeOverride
-                        : BigDecimal.valueOf(course.getAmount());
-                a.setTotalFee(fee);
-                a.setBalanceDue(fee);
+                BigDecimal fee = feeOverride != null ? feeOverride : BigDecimal.valueOf(course.getAmount());
+                a.setTotalFee(fee); a.setBalanceDue(fee);
                 a.setCourseStatus(CourseStatus.ENROLLED);
             }
             case INTERN -> {
@@ -71,10 +76,8 @@ public class AllocationService {
                 Intern intern = internRepo.findById(internId)
                         .orElseThrow(() -> new ResourceNotFoundException("Intern", internId));
                 a.setIntern(intern);
-                BigDecimal fee = feeOverride != null ? feeOverride
-                        : BigDecimal.valueOf(intern.getAmount());
-                a.setTotalFee(fee);
-                a.setBalanceDue(fee);
+                BigDecimal fee = feeOverride != null ? feeOverride : BigDecimal.valueOf(intern.getAmount());
+                a.setTotalFee(fee); a.setBalanceDue(fee);
                 a.setInternStatus(InternStatus.ONGOING);
             }
             case PROJECT -> {
@@ -83,13 +86,40 @@ public class AllocationService {
                 Project project = projectRepo.findById(projectId)
                         .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
                 a.setProject(project);
-                BigDecimal fee = feeOverride != null ? feeOverride
-                        : BigDecimal.valueOf(project.getAmount());
-                a.setTotalFee(fee);
-                a.setBalanceDue(fee);
+                BigDecimal fee = feeOverride != null ? feeOverride : BigDecimal.valueOf(project.getAmount());
+                a.setTotalFee(fee); a.setBalanceDue(fee);
                 a.setProjectStatus(ProjectStatus.NOT_STARTED);
             }
         }
+
+        return allocationRepo.save(a);
+    }
+
+    // ── Update employee + timing ─────────────────────────────────────────────
+    @Transactional
+    public Allocation updateEmployeeAndTiming(Long id, Map<String, Object> body) {
+        Allocation a = findById(id);
+
+        if (body.containsKey("assignedEmployeeId")) {
+            Object empIdRaw = body.get("assignedEmployeeId");
+            if (empIdRaw == null) {
+                a.setAssignedEmployee(null);
+            } else {
+                Long empId = toLong(empIdRaw);
+                a.setAssignedEmployee(userRepo.findById(empId)
+                        .orElseThrow(() -> new ResourceNotFoundException("User", empId)));
+            }
+        }
+        if (body.get("classStartTime") != null)
+            a.setClassStartTime(LocalTime.parse((String) body.get("classStartTime")));
+        if (body.get("classEndTime") != null)
+            a.setClassEndTime(LocalTime.parse((String) body.get("classEndTime")));
+        if (body.get("startDate") != null)
+            a.setStartDate(LocalDate.parse((String) body.get("startDate")));
+        if (body.get("endDate") != null)
+            a.setEndDate(LocalDate.parse((String) body.get("endDate")));
+        if (body.get("notes") != null)
+            a.setNotes((String) body.get("notes"));
 
         return allocationRepo.save(a);
     }
@@ -108,15 +138,13 @@ public class AllocationService {
             case COURSE  -> { if (body.get("courseStatus")  != null) a.setCourseStatus(CourseStatus.valueOf(body.get("courseStatus"))); }
         }
 
-        if (body.get("actualEndDate") != null)
-            a.setActualEndDate(LocalDate.parse(body.get("actualEndDate")));
-        if (body.get("notes") != null)
-            a.setNotes(body.get("notes"));
+        if (body.get("actualEndDate") != null) a.setActualEndDate(LocalDate.parse(body.get("actualEndDate")));
+        if (body.get("notes") != null) a.setNotes(body.get("notes"));
 
         return allocationRepo.save(a);
     }
 
-    // ── Payment update (called by PaymentService) ─────────────────────────
+    // ── Payment refresh ───────────────────────────────────────────────────────
     @Transactional
     public void refreshPaymentTotals(Allocation a) {
         BigDecimal paid  = a.getAmountPaid() != null ? a.getAmountPaid() : BigDecimal.ZERO;
@@ -130,20 +158,21 @@ public class AllocationService {
         allocationRepo.save(a);
     }
 
-    // ── Queries ──────────────────────────────────────────────────────────────
-    public List<Allocation> getAll()                           { return allocationRepo.findAll(); }
-    public List<Allocation> getByStudent(Long sid)             { return allocationRepo.findByStudentId(sid); }
-    public List<Allocation> getActiveByStudent(Long sid)       { return allocationRepo.findActiveByStudent(sid); }
-    public List<Allocation> getByCategory(String cat)          { return allocationRepo.findByCategory(AllocationCategory.valueOf(cat)); }
-    public List<Allocation> getPaidWithoutInvoice()            { return allocationRepo.findPaidWithoutInvoice(); }
-    public List<Allocation> getCompletedWithoutCertificate()   { return allocationRepo.findCompletedWithoutCertificate(); }
+    // ── Queries ───────────────────────────────────────────────────────────────
+    public List<Allocation> getAll()                         { return allocationRepo.findAll(); }
+    public List<Allocation> getByStudent(Long sid)           { return allocationRepo.findByStudentId(sid); }
+    public List<Allocation> getActiveByStudent(Long sid)     { return allocationRepo.findActiveByStudent(sid); }
+    public List<Allocation> getByCategory(String cat)        { return allocationRepo.findByCategory(AllocationCategory.valueOf(cat)); }
+    public List<Allocation> getPaidWithoutInvoice()          { return allocationRepo.findPaidWithoutInvoice(); }
+    public List<Allocation> getCompletedWithoutCertificate() { return allocationRepo.findCompletedWithoutCertificate(); }
+    public List<Allocation> getByEmployee(Long empId)        { return allocationRepo.findByAssignedEmployeeId(empId); }
 
     public Allocation findById(Long id) {
         return allocationRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Allocation", id));
     }
 
-    // ── Catalog dropdown resolver ────────────────────────────────────────────
+    // ── Catalog dropdown ──────────────────────────────────────────────────────
     public List<?> getCatalogItems(String category, Long domainId) {
         return switch (AllocationCategory.valueOf(category)) {
             case COURSE  -> courseRepo.findByDomain_Id(domainId).orElse(List.of());

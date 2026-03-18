@@ -9,12 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
 
-// REPLACE your existing AllocationRepository with this
 public interface AllocationRepository extends JpaRepository<Allocation, Long> {
 
     List<Allocation> findByStudentId(Long studentId);
 
     List<Allocation> findByCategory(AllocationCategory category);
+
+    List<Allocation> findByAssignedEmployeeId(Long employeeId);
 
     List<Allocation> findByCategoryAndAllocationStatus(AllocationCategory category, AllocationStatus status);
 

@@ -10,9 +10,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface FinanceTransactionRepository extends JpaRepository<FinanceTransaction, Long> {
+
     List<FinanceTransaction> findByType(TransactionType type);
 
     List<FinanceTransaction> findByTransactionDateBetweenOrderByTransactionDateDesc(LocalDate start, LocalDate end);
+
+    List<FinanceTransaction> findAllByOrderByTransactionDateDesc();
 
     @Query("SELECT COALESCE(SUM(f.amount), 0) FROM FinanceTransaction f WHERE f.type = :type AND f.transactionDate BETWEEN :start AND :end")
     BigDecimal sumByTypeAndDateRange(@Param("type") TransactionType type, @Param("start") LocalDate start, @Param("end") LocalDate end);

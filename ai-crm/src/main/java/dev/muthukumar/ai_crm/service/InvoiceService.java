@@ -21,15 +21,33 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InvoiceService {
 
-    private final InvoiceRepository invoiceRepo;
+    private final InvoiceRepository    invoiceRepo;
     private final AllocationRepository allocationRepo;
-    private final AllocationService allocationService;
+    private final AllocationService    allocationService;
 
+    // ── Get all (force-init lazy inside transaction) ──────────────────────────
+    @Transactional(readOnly = true)
+    public List<Invoice> getAll() {
+        List<Invoice> all = invoiceRepo.findAll();
+        for (Invoice inv : all) {
+            if (inv.getAllocation() != null) {
+                inv.getAllocation().getId();                         // force proxy init
+                if (inv.getAllocation().getStudent() != null)
+                    inv.getAllocation().getStudent().getName();
+            }
+            if (inv.getItems() != null) {
+                inv.getItems().size();                              // force collection init
+            }
+        }
+        return all;
+    }
+
+    // ── Create ────────────────────────────────────────────────────────────────
     @Transactional
     public Invoice create(Map<String, Object> body) {
         Invoice inv = new Invoice();
 
-        // Allocation-linked invoice
+        // Allocation-linked or manual
         if (body.get("allocationId") != null) {
             Long allocationId = Long.parseLong(body.get("allocationId").toString());
             if (invoiceRepo.findByAllocationId(allocationId).isPresent())
@@ -37,45 +55,60 @@ public class InvoiceService {
 
             Allocation a = allocationService.findById(allocationId);
             if (!PaymentStatus.PAID.equals(a.getPaymentStatus()))
-                throw new BadRequestException("Invoice only generated after full payment. Status: " + a.getPaymentStatus());
+                throw new BadRequestException(
+                        "Invoice can only be generated after full payment. Status: " + a.getPaymentStatus());
 
             inv.setAllocation(a);
             inv.setClientName(a.getStudent().getName());
             inv.setClientEmail(a.getStudent().getEmail());
             inv.setClientPhone(a.getStudent().getPhone());
         } else {
-            // Manual invoice
-            inv.setClientName((String) body.get("clientName"));
-            inv.setClientEmail((String) body.get("clientEmail"));
-            inv.setClientPhone((String) body.get("clientPhone"));
-            inv.setClientAddress((String) body.get("clientAddress"));
+            inv.setClientName(str(body, "clientName"));
+            inv.setClientEmail(str(body, "clientEmail"));
+            inv.setClientPhone(str(body, "clientPhone"));
+            inv.setClientAddress(str(body, "clientAddress"));
         }
 
-        inv.setInvoiceDate(LocalDate.parse((String) body.get("invoiceDate")));
-        if (body.get("dueDate") != null) inv.setDueDate(LocalDate.parse((String) body.get("dueDate")));
-        if (body.get("notes")   != null) inv.setNotes((String) body.get("notes"));
+        String invoiceDateStr = str(body, "invoiceDate");
+        inv.setInvoiceDate(invoiceDateStr != null ? LocalDate.parse(invoiceDateStr) : LocalDate.now());
+        String dueDateStr = str(body, "dueDate");
+        if (dueDateStr != null) inv.setDueDate(LocalDate.parse(dueDateStr));
+        if (body.get("notes") != null) inv.setNotes(body.get("notes").toString());
 
-        // Build line items
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> itemsData = (List<Map<String, Object>>) body.get("items");
-        List<InvoiceItem> items = new ArrayList<>();
-        BigDecimal subtotal = BigDecimal.ZERO;
+        // ── Build line items (no pattern matching — plain casting) ────────────
+        List<InvoiceItem> items  = new ArrayList<>();
+        BigDecimal        subtotal = BigDecimal.ZERO;
 
-        for (Map<String, Object> iData : itemsData) {
-            InvoiceItem item = new InvoiceItem();
-            item.setDescription((String) iData.get("description"));
-            item.setQuantity(Integer.parseInt(iData.get("quantity").toString()));
-            item.setUnitPrice(new BigDecimal(iData.get("unitPrice").toString()));
-            item.setTotalPrice(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
-            item.setInvoice(inv);
-            items.add(item);
-            subtotal = subtotal.add(item.getTotalPrice());
+        Object itemsRaw = body.get("items");
+        if (itemsRaw instanceof List) {
+            List<?> rawList = (List<?>) itemsRaw;
+            for (Object o : rawList) {
+                if (o instanceof Map) {
+                    Map<?, ?> m = (Map<?, ?>) o;
+                    InvoiceItem item = new InvoiceItem();
+                    item.setDescription(String.valueOf(m.getOrDefault("description", "")));
+                    item.setQuantity(Integer.parseInt(
+                            String.valueOf(m.getOrDefault("quantity", "1"))));
+                    item.setUnitPrice(new BigDecimal(
+                            String.valueOf(m.getOrDefault("unitPrice", "0"))));
+                    item.setTotalPrice(
+                            item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                    item.setInvoice(inv);
+                    items.add(item);
+                    subtotal = subtotal.add(item.getTotalPrice());
+                }
+            }
         }
 
-        BigDecimal discount   = body.get("discount")   != null ? new BigDecimal(body.get("discount").toString())   : BigDecimal.ZERO;
-        BigDecimal taxPercent = body.get("taxPercent")  != null ? new BigDecimal(body.get("taxPercent").toString()) : BigDecimal.ZERO;
+        // ── Totals ────────────────────────────────────────────────────────────
+        BigDecimal discount   = body.get("discount")   != null
+                ? new BigDecimal(body.get("discount").toString())   : BigDecimal.ZERO;
+        BigDecimal taxPercent = body.get("taxPercent") != null
+                ? new BigDecimal(body.get("taxPercent").toString()) : BigDecimal.ZERO;
         BigDecimal afterDisc  = subtotal.subtract(discount);
-        BigDecimal taxAmount  = afterDisc.multiply(taxPercent).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal taxAmount  = afterDisc
+                .multiply(taxPercent)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         BigDecimal total      = afterDisc.add(taxAmount);
 
         inv.setSubtotal(subtotal);
@@ -83,7 +116,7 @@ public class InvoiceService {
         inv.setTaxPercent(taxPercent);
         inv.setTaxAmount(taxAmount);
         inv.setTotalAmount(total);
-        inv.setAmountPaid(total);   // fully paid invoice
+        inv.setAmountPaid(total);
         inv.setBalanceDue(BigDecimal.ZERO);
         inv.setStatus("PAID");
         inv.setItems(items);
@@ -91,30 +124,36 @@ public class InvoiceService {
 
         Invoice saved = invoiceRepo.save(inv);
 
-        // Mark allocation invoice generated
-        if (inv.getAllocation() != null) {
-            Allocation a = inv.getAllocation();
-            a.setInvoiceGenerated(true);
-            allocationRepo.save(a);
+        // Mark allocation as invoice-generated
+        if (saved.getAllocation() != null) {
+            saved.getAllocation().setInvoiceGenerated(true);
+            allocationRepo.save(saved.getAllocation());
         }
-
         return saved;
     }
 
+    // ── Queries ───────────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
     public Invoice getById(Long id) {
         return invoiceRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
     }
 
+    @Transactional(readOnly = true)
     public Invoice getByAllocation(Long allocationId) {
         return invoiceRepo.findByAllocationId(allocationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found for allocation: " + allocationId));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Invoice not found for allocation: " + allocationId));
     }
 
-    public List<Invoice> getAll() { return invoiceRepo.findAll(); }
-
+    // ── Helpers ───────────────────────────────────────────────────────────────
     private String generateInvoiceNumber() {
         Integer seq = invoiceRepo.findMaxSequence();
         return "INV-" + String.format("%05d", (seq == null ? 0 : seq) + 1);
+    }
+
+    private String str(Map<String, Object> body, String key) {
+        Object v = body.get(key);
+        return (v != null && !v.toString().isBlank()) ? v.toString() : null;
     }
 }

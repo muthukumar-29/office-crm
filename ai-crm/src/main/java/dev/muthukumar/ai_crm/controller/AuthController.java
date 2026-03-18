@@ -8,10 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
@@ -38,43 +35,41 @@ public class AuthController {
     public ResponseEntity<String> registerUser(@RequestBody User user) {
         user.setUserId(generateUserId());
         String email = user.getEmail();
-        String password = passwordEncoder.encode(user.getPassword());
-        user.setPassword(password);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         if (userRepository.findByEmail(email).isPresent()) {
             return new ResponseEntity<>("Email already exists", HttpStatus.CONFLICT);
         }
-
         userService.create(user);
         return new ResponseEntity<>("Registered Successfully", HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
+        String email    = body.get("email");
         String password = body.get("password");
 
-        if (userRepository.findByEmail(email).isEmpty()) {
+        var userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty())
             return new ResponseEntity<>("User not found!", HttpStatus.UNAUTHORIZED);
-        }
 
-        User user = userRepository.findByEmail(email).get();
-
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        User user = userOpt.get();
+        if (!passwordEncoder.matches(password, user.getPassword()))
             return new ResponseEntity<>("Invalid credentials!", HttpStatus.UNAUTHORIZED);
-        }
 
-        String token = jwtUtil.generateToken(email);
+        // ✅ embed role in JWT so JwtFilter can set GrantedAuthority
+        String role  = user.getRole() != null ? user.getRole().name() : "EMPLOYEE";
+        String token = jwtUtil.generateToken(email, role);
 
-        // ✅ Fixed: return full user info so frontend can store role/name/userId
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", Map.of(
                         "token",  token,
-                        "userId", user.getUserId(),
+                        "userId", user.getUserId() != null ? user.getUserId() : "",
+                        "id",     user.getId(),
                         "name",   user.getName(),
                         "email",  user.getEmail(),
-                        "role",   user.getRole() != null ? user.getRole().name() : "EMPLOYEE"
+                        "role",   role
                 )
         ));
     }

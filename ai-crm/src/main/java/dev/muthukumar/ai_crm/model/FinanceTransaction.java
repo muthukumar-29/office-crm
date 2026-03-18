@@ -33,7 +33,7 @@ public class FinanceTransaction {
     @Column(name = "payment_mode")
     private PaymentMode paymentMode;
 
-    @Column(name = "transaction_date", nullable = false)
+    @Column(name = "transaction_date")
     private LocalDate transactionDate;
 
     @Column(name = "reference_no")
@@ -47,11 +47,22 @@ public class FinanceTransaction {
     @JoinColumn(name = "office_project_id")
     private OfficeProject officeProject;
 
+    // For salary auto-expense tracking
+    @Column(name = "reference_id")
+    private Long referenceId;
+
+    @Column(name = "reference_type")
+    private String referenceType;  // "SALARY", "PAYMENT", etc.
+
     private String notes;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
-    protected void onCreate() { this.createdAt = LocalDateTime.now(); }
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        if (this.transactionDate == null) this.transactionDate = LocalDate.now();
+        if (this.category == null) this.category = "General";
+    }
 }
