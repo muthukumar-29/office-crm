@@ -17,47 +17,77 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import dev.muthukumar.anjana_crm.data.model.Allocation
 import dev.muthukumar.anjana_crm.ui.common.*
+import dev.muthukumar.anjana_crm.ui.theme.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun AdminAllocationsScreen(navController: NavController, vm: AdminViewModel = viewModel()) {
-    val state by vm.state.collectAsState()
-    var filterCat by remember { mutableStateOf("ALL") }
+    val state       by vm.state.collectAsState()
+    val drawerState  = rememberDrawerState(DrawerValue.Closed)
+    val scope        = rememberCoroutineScope()
+    val userName    by vm.userName.collectAsState(initial = "")
+    val role        by vm.role.collectAsState(initial = "")
+    var filterCat   by remember { mutableStateOf("ALL") }
+    val currentRoute = navController.currentBackStackEntry?.destination?.route
+
     val categories = listOf("ALL", "COURSE", "INTERN", "PROJECT")
-    val filtered = if (filterCat == "ALL") state.allocations
+    val filtered   = if (filterCat == "ALL") state.allocations
     else state.allocations.filter { it.category == filterCat }
 
-    Scaffold(
-        containerColor = PageBg,
-        topBar = { CrmTopBar("Allocations", onBack = { navController.popBackStack() }) },
-        bottomBar = { AdminBottomNav(navController) }
-    ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                categories.forEach { cat ->
-                    FilterChip(
-                        selected = filterCat == cat,
-                        onClick  = { filterCat = cat },
-                        label    = { Text(cat, fontSize = 12.sp) },
-                        colors   = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = BrandBlue,
-                            selectedLabelColor     = Color.White,
-                            containerColor         = SurfaceDark,
-                            labelColor             = Color(0xFF94A3B8)
-                        )
-                    )
-                }
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(drawerContainerColor = White, drawerTonalElevation = 0.dp) {
+                AppDrawer(
+                    userName = userName, userRole = role, currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        scope.launch { drawerState.close() }
+                        navController.navigate(route) { launchSingleTop = true }
+                    },
+                    onLogout = {
+                        navController.navigate("login") { popUpTo(0) { inclusive = true } }
+                    },
+                    drawerItems = adminDrawerItems()
+                )
             }
-            if (state.loading) LoadingView()
-            else LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
-            ) {
-                item { Text("${filtered.size} allocations", fontSize = 12.sp, color = Color(0xFF64748B)) }
-                items(filtered) { alloc -> AdminAllocationDetailCard(alloc, vm) }
+        }
+    ) {
+        Scaffold(
+            containerColor = OffWhite,
+            topBar = { CrmTopBar("Allocations", onMenuClick = { scope.launch { drawerState.open() } }) }
+        ) { padding ->
+            Column(Modifier.fillMaxSize().padding(padding)) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    categories.forEach { cat ->
+                        FilterChip(
+                            selected = filterCat == cat,
+                            onClick  = { filterCat = cat },
+                            label    = { Text(cat, fontSize = 12.sp) },
+                            colors   = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = BrandMagenta,
+                                selectedLabelColor     = White,
+                                containerColor         = SurfaceVariant,
+                                labelColor             = OnSurfaceMuted
+                            )
+                        )
+                    }
+                }
+                if (state.loading) LoadingView()
+                else LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp)
+                ) {
+                    item {
+                        Text("${filtered.size} allocations", fontSize = 12.sp, color = OnSurfaceMuted)
+                    }
+                    items(filtered) { alloc ->
+                        AdminAllocationDetailCard(alloc, vm)
+                    }
+                }
             }
         }
     }
@@ -76,7 +106,8 @@ fun AdminAllocationDetailCard(alloc: Allocation, vm: AdminViewModel) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape    = RoundedCornerShape(12.dp),
-        colors   = CardDefaults.cardColors(containerColor = SurfaceDark),
+        colors   = CardDefaults.cardColors(containerColor = White),
+        elevation = CardDefaults.cardElevation(2.dp),
         onClick  = { expanded = !expanded }
     ) {
         Column(Modifier.padding(14.dp)) {
@@ -87,16 +118,16 @@ fun AdminAllocationDetailCard(alloc: Allocation, vm: AdminViewModel) {
             ) {
                 Column(Modifier.weight(1f)) {
                     Text(alloc.student?.name ?: "—", fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold, color = Color.White)
+                        fontWeight = FontWeight.SemiBold, color = OnSurface)
                     Text("${alloc.category}: ${
                         alloc.course?.name ?: alloc.intern?.title ?: alloc.project?.title ?: "—"
-                    }", fontSize = 12.sp, color = Color(0xFF94A3B8))
+                    }", fontSize = 12.sp, color = OnSurfaceMuted)
                     alloc.assignedEmployee?.let {
-                        Text("👤 ${it.name}", fontSize = 11.sp, color = Color(0xFF60A5FA))
+                        Text("👤 ${it.name}", fontSize = 11.sp, color = BrandMagenta)
                     }
-                    if (alloc.classStartTime != null)
-                        Text("⏰ ${alloc.classStartTime} – ${alloc.classEndTime}",
-                            fontSize = 11.sp, color = Color(0xFF64748B))
+                    alloc.classStartTime?.let {
+                        Text("⏰ $it – ${alloc.classEndTime}", fontSize = 11.sp, color = OnSurfaceHint)
+                    }
                 }
                 Column(
                     horizontalAlignment = Alignment.End,
@@ -109,35 +140,32 @@ fun AdminAllocationDetailCard(alloc: Allocation, vm: AdminViewModel) {
 
             if (expanded) {
                 Spacer(Modifier.height(10.dp))
-                Divider(color = Color(0x1AFFFFFF))
+                Divider(color = Outline)
                 Spacer(Modifier.height(10.dp))
 
-                // Fee info
                 Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                     Column {
-                        Text("Total Fee", fontSize = 11.sp, color = Color(0xFF64748B))
+                        Text("Total Fee", fontSize = 11.sp, color = OnSurfaceMuted)
                         Text("₹${alloc.totalFee?.let { "%,.0f".format(it) } ?: "—"}",
-                            fontSize = 13.sp, color = Color.White)
+                            fontSize = 13.sp, color = OnSurface)
                     }
                     Column {
-                        Text("Paid", fontSize = 11.sp, color = Color(0xFF64748B))
+                        Text("Paid", fontSize = 11.sp, color = OnSurfaceMuted)
                         Text("₹${alloc.amountPaid?.let { "%,.0f".format(it) } ?: "0"}",
-                            fontSize = 13.sp, color = Color(0xFF10B981))
+                            fontSize = 13.sp, color = SuccessGreen)
                     }
                     Column {
-                        Text("Balance", fontSize = 11.sp, color = Color(0xFF64748B))
+                        Text("Balance", fontSize = 11.sp, color = OnSurfaceMuted)
                         Text("₹${alloc.balanceDue?.let { "%,.0f".format(it) } ?: "—"}",
                             fontSize = 13.sp,
-                            color = if ((alloc.balanceDue ?: 0.0) > 0) Color(0xFFEF4444) else Color(0xFF10B981))
+                            color = if ((alloc.balanceDue ?: 0.0) > 0) ErrorRed else SuccessGreen)
                     }
                 }
 
                 Spacer(Modifier.height(10.dp))
                 Text("Update Allocation Status", fontSize = 11.sp,
-                    color = Color(0xFF64748B), fontWeight = FontWeight.Medium)
+                    color = OnSurfaceMuted, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(6.dp))
-
-                // Allocation status chips — fixed: use BorderStroke directly
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     allocOptions.forEach { opt ->
                         val isSelected = alloc.allocationStatus == opt
@@ -147,8 +175,8 @@ fun AdminAllocationDetailCard(alloc: Allocation, vm: AdminViewModel) {
                             },
                             label  = { Text(opt.replace("_", " "), fontSize = 10.sp) },
                             colors = AssistChipDefaults.assistChipColors(
-                                containerColor = if (isSelected) BrandBlue else Color(0xFF1E3A5F),
-                                labelColor     = Color.White
+                                containerColor = if (isSelected) BrandMagenta else BrandMagentaLight,
+                                labelColor     = if (isSelected) White else BrandMagenta
                             ),
                             border = BorderStroke(0.dp, Color.Transparent)
                         )
@@ -157,10 +185,9 @@ fun AdminAllocationDetailCard(alloc: Allocation, vm: AdminViewModel) {
 
                 Spacer(Modifier.height(8.dp))
                 Text("Update Work Status", fontSize = 11.sp,
-                    color = Color(0xFF64748B), fontWeight = FontWeight.Medium)
+                    color = OnSurfaceMuted, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(6.dp))
 
-                // Work status chips
                 val key = when (alloc.category.uppercase()) {
                     "PROJECT" -> "projectStatus"
                     "INTERN"  -> "internStatus"
@@ -176,8 +203,8 @@ fun AdminAllocationDetailCard(alloc: Allocation, vm: AdminViewModel) {
                             },
                             label  = { Text(opt.replace("_", " "), fontSize = 10.sp) },
                             colors = AssistChipDefaults.assistChipColors(
-                                containerColor = if (isSelected) BrandOrange else Color(0xFF1E293B),
-                                labelColor     = Color.White
+                                containerColor = if (isSelected) BrandPurple else BrandPurpleLight,
+                                labelColor     = if (isSelected) White else BrandPurple
                             ),
                             border = BorderStroke(0.dp, Color.Transparent)
                         )

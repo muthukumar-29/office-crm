@@ -64,6 +64,7 @@ class AdminViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // ── Allocations ───────────────────────────────────────────
     fun updateAllocationStatus(id: Long, statusMap: Map<String, String>) {
         viewModelScope.launch {
             try { api.updateAllocationStatus(id, statusMap); loadAll() }
@@ -71,6 +72,7 @@ class AdminViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // ── Certificates ──────────────────────────────────────────
     fun issueCertificate(allocationId: Long, grade: String?) {
         viewModelScope.launch {
             try {
@@ -83,6 +85,7 @@ class AdminViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // ── Salary ────────────────────────────────────────────────
     fun markSalaryPaid(id: Long) {
         viewModelScope.launch {
             try { api.markSalaryPaid(id); loadAll() }
@@ -97,10 +100,39 @@ class AdminViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // ── NEW: Create Invoice ──────────────────────────────────
+    // ── Invoices ──────────────────────────────────────────────
     fun createInvoice(body: Map<String, Any>) {
         viewModelScope.launch {
             try { api.createInvoice(body); loadAll() }
+            catch (_: Exception) {}
+        }
+    }
+
+    fun markInvoicePaid(id: Long) {
+        viewModelScope.launch {
+            try { api.markInvoicePaid(id); loadAll() }
+            catch (_: Exception) {}
+        }
+    }
+
+    // ── Finance transactions ──────────────────────────────────
+    fun createTransaction(body: Map<String, Any>) {
+        viewModelScope.launch {
+            try { api.createTransaction(body); loadAll() }
+            catch (_: Exception) {}
+        }
+    }
+
+    fun updateTransaction(id: Long, body: Map<String, Any>) {
+        viewModelScope.launch {
+            try { api.updateTransaction(id, body); loadAll() }
+            catch (_: Exception) {}
+        }
+    }
+
+    fun deleteTransaction(id: Long) {
+        viewModelScope.launch {
+            try { api.deleteTransaction(id); loadAll() }
             catch (_: Exception) {}
         }
     }

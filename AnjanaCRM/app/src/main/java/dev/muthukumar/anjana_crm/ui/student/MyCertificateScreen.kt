@@ -9,20 +9,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import dev.muthukumar.anjana_crm.ui.common.*
+import dev.muthukumar.anjana_crm.ui.theme.*
 
 @Composable
 fun StudentCertificateScreen(navController: NavController, vm: StudentViewModel = viewModel()) {
     val state by vm.state.collectAsState()
-
     Scaffold(
-        containerColor = PageBg,
+        containerColor = OffWhite,
         topBar = { CrmTopBar("My Certificates", onBack = { navController.popBackStack() }) },
         bottomBar = { StudentBottomNav(navController) }
     ) { padding ->
@@ -37,72 +37,59 @@ fun StudentCertificateScreen(navController: NavController, vm: StudentViewModel 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("🎓", fontSize = 48.sp)
                             Spacer(Modifier.height(12.dp))
-                            Text("No certificates yet", color = Color(0xFF64748B), fontSize = 14.sp)
-                            Spacer(Modifier.height(4.dp))
+                            Text("No certificates yet", color = OnSurfaceMuted, fontSize = 14.sp)
                             Text("Complete your program to receive one",
-                                color = Color(0xFF475569), fontSize = 12.sp)
+                                color = OnSurfaceHint, fontSize = 12.sp)
                         }
                     }
                 }
             }
             items(state.certificates) { cert ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceDark)
-                ) {
+                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = White),
+                    elevation = CardDefaults.cardElevation(3.dp)) {
                     Column {
-                        // Gradient top accent bar
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(4.dp)
-                                .background(
-                                    brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                                        listOf(BrandBlue, BrandOrange)
-                                    )
-                                )
-                        )
+                        Box(modifier = Modifier.fillMaxWidth().height(5.dp).background(
+                            Brush.horizontalGradient(listOf(BrandPurple, BrandMagenta))
+                        ))
                         Column(Modifier.padding(16.dp)) {
-                            Row(
-                                Modifier.fillMaxWidth(),
+                            Row(Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Top
-                            ) {
+                                verticalAlignment = Alignment.Top) {
                                 Column(Modifier.weight(1f)) {
                                     Text("Certificate of Completion", fontSize = 10.sp,
-                                        color = Color(0xFF64748B), letterSpacing = 0.6.sp,
+                                        color = OnSurfaceHint, letterSpacing = 0.6.sp,
                                         fontWeight = FontWeight.SemiBold)
                                     Spacer(Modifier.height(4.dp))
                                     Text(cert.programTitle ?: cert.domainName ?: "Program",
-                                        fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                                    Text(cert.studentName, fontSize = 13.sp, color = Color(0xFF94A3B8))
+                                        fontSize = 15.sp, fontWeight = FontWeight.Bold, color = OnSurface)
+                                    Text(cert.studentName, fontSize = 13.sp, color = OnSurfaceMuted)
                                 }
                                 cert.grade?.let {
-                                    Surface(color = BrandOrange.copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
+                                    Surface(color = BrandMagentaLight, shape = RoundedCornerShape(8.dp)) {
                                         Text(it, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold,
-                                            color = BrandOrange,
+                                            color = BrandMagenta,
                                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp))
                                     }
                                 }
                             }
                             Spacer(Modifier.height(12.dp))
-                            Divider(color = Color(0x1AFFFFFF))
+                            Divider(color = Outline)
                             Spacer(Modifier.height(10.dp))
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Column {
-                                    Text("Cert No.", fontSize = 10.sp, color = Color(0xFF64748B))
+                                    Text("Cert No.", fontSize = 10.sp, color = OnSurfaceHint)
                                     Text(cert.certificateNumber, fontSize = 12.sp,
-                                        color = Color(0xFF60A5FA), fontWeight = FontWeight.Medium)
+                                        color = BrandMagenta, fontWeight = FontWeight.Medium)
                                 }
                                 Column(horizontalAlignment = Alignment.End) {
-                                    Text("Issued", fontSize = 10.sp, color = Color(0xFF64748B))
-                                    Text(cert.issuedDate, fontSize = 12.sp, color = Color(0xFF94A3B8))
+                                    Text("Issued", fontSize = 10.sp, color = OnSurfaceHint)
+                                    Text(cert.issuedDate, fontSize = 12.sp, color = OnSurfaceMuted)
                                 }
                             }
                             Spacer(Modifier.height(8.dp))
                             Text("Anjana Infotech · ISO 9001:2015 Certified",
-                                fontSize = 10.sp, color = Color(0xFF475569))
+                                fontSize = 10.sp, color = OnSurfaceHint)
                         }
                     }
                 }

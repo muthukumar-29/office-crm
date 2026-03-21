@@ -6,14 +6,18 @@ import retrofit2.http.*
 
 interface ApiService {
 
-    // ── Auth ──────────────────────────────────────────────────────────────────
+    // ── Auth ──────────────────────────────────────────────────
     @POST("auth/login")
     suspend fun login(@Body body: LoginRequest): Response<LoginResponse>
 
-    // ── Dashboard ─────────────────────────────────────────────────────────────
+    // ── Students ──────────────────────────────────────────────
     @GET("students")
     suspend fun getStudents(): Response<List<Student>>
 
+    @GET("students/{id}")
+    suspend fun getStudentById(@Path("id") id: Long): Response<Student>
+
+    // ── Allocations ───────────────────────────────────────────
     @GET("allocations")
     suspend fun getAllocations(): Response<ApiListResponse<Allocation>>
 
@@ -35,21 +39,21 @@ interface ApiService {
         @Body body: Map<String, Any>
     ): Response<ApiResponse<Allocation>>
 
-    // ── Certificates ──────────────────────────────────────────────────────────
+    // ── Certificates ──────────────────────────────────────────
     @GET("certificates")
     suspend fun getCertificates(): Response<ApiListResponse<Certificate>>
 
     @POST("certificates")
     suspend fun issueCertificate(@Body body: Map<String, Any>): Response<ApiResponse<Certificate>>
 
-    // ── Payments ──────────────────────────────────────────────────────────────
+    // ── Payments ──────────────────────────────────────────────
     @GET("payments")
     suspend fun getPayments(
         @Query("start") start: String,
         @Query("end") end: String
     ): Response<ApiListResponse<Payment>>
 
-    // ── Salary ────────────────────────────────────────────────────────────────
+    // ── Salary ────────────────────────────────────────────────
     @GET("salary")
     suspend fun getAllSalaries(): Response<List<Salary>>
 
@@ -62,33 +66,44 @@ interface ApiService {
     @PATCH("salary/{id}/pay")
     suspend fun markSalaryPaid(@Path("id") id: Long): Response<Salary>
 
-    // ── Invoices ──────────────────────────────────────────────────────────────
+    // ── Invoices ──────────────────────────────────────────────
     @GET("invoices")
     suspend fun getInvoices(): Response<ApiListResponse<Invoice>>
 
     @POST("invoices")
     suspend fun createInvoice(@Body body: Map<String, Any>): Response<ApiResponse<Invoice>>
 
-    // ── Finance ───────────────────────────────────────────────────────────────
+    @PATCH("invoices/{id}/pay")
+    suspend fun markInvoicePaid(@Path("id") id: Long): Response<ApiResponse<Invoice>>
+
+    // ── Finance summary ───────────────────────────────────────
     @GET("finance/summary")
     suspend fun getFinanceSummary(
         @Query("start") start: String? = null,
         @Query("end") end: String? = null
     ): Response<ApiResponse<FinanceSummary>>
 
+    // ── Finance transactions ──────────────────────────────────
     @GET("finance/transactions")
     suspend fun getTransactions(): Response<ApiListResponse<FinanceTransaction>>
 
-    // ── Students ──────────────────────────────────────────────────────────────
-    @GET("students/{id}")
-    suspend fun getStudentById(@Path("id") id: Long): Response<Student>
+    @POST("finance/transactions")
+    suspend fun createTransaction(@Body body: Map<String, Any>): Response<ApiResponse<FinanceTransaction>>
 
-    // ── Users ────────────────────────────────────────────────────────────────
+    @PATCH("finance/transactions/{id}")
+    suspend fun updateTransaction(
+        @Path("id") id: Long,
+        @Body body: Map<String, Any>
+    ): Response<ApiResponse<FinanceTransaction>>
+
+    @DELETE("finance/transactions/{id}")
+    suspend fun deleteTransaction(@Path("id") id: Long): Response<ApiResponse<Unit>>
+
+    // ── Users ─────────────────────────────────────────────────
     @GET("users")
     suspend fun getUsers(): Response<List<User>>
 
-    // ── Tickets / Feedback ────────────────────────────────────────────────────
-    // These go to a simple endpoint — implement on backend if not done yet
+    // ── Tickets ───────────────────────────────────────────────
     @POST("tickets")
     suspend fun submitTicket(@Body body: TicketRequest): Response<ApiResponse<Ticket>>
 

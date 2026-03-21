@@ -1,3 +1,4 @@
+// ─── MyStatusScreen.kt ──────────────────────────────────────
 package dev.muthukumar.anjana_crm.ui.student
 
 import androidx.compose.foundation.layout.*
@@ -10,20 +11,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import dev.muthukumar.anjana_crm.ui.common.*
+import dev.muthukumar.anjana_crm.ui.theme.*
 
 @Composable
 fun StudentStatusScreen(navController: NavController, vm: StudentViewModel = viewModel()) {
     val state by vm.state.collectAsState()
-
     Scaffold(
-        containerColor = PageBg,
+        containerColor = OffWhite,
         topBar = { CrmTopBar("My Programs", onBack = { navController.popBackStack() }) },
         bottomBar = { StudentBottomNav(navController) }
     ) { padding ->
@@ -35,7 +35,7 @@ fun StudentStatusScreen(navController: NavController, vm: StudentViewModel = vie
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("📋", fontSize = 40.sp)
                     Spacer(Modifier.height(12.dp))
-                    Text("No programs enrolled yet", color = Color(0xFF64748B), fontSize = 14.sp)
+                    Text("No programs enrolled yet", color = OnSurfaceMuted, fontSize = 14.sp)
                 }
             }
             else -> LazyColumn(
@@ -44,106 +44,89 @@ fun StudentStatusScreen(navController: NavController, vm: StudentViewModel = vie
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
                 items(state.allocations) { alloc ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = SurfaceDark)
-                    ) {
+                    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = White),
+                        elevation = CardDefaults.cardElevation(2.dp)) {
                         Column(Modifier.padding(16.dp)) {
-                            Row(
-                                Modifier.fillMaxWidth(),
+                            Row(Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Top
-                            ) {
+                                verticalAlignment = Alignment.Top) {
                                 Column(Modifier.weight(1f)) {
-                                    val programName = alloc.course?.name
-                                        ?: alloc.intern?.title ?: alloc.project?.title ?: "Program"
+                                    val programName = alloc.course?.name ?: alloc.intern?.title
+                                    ?: alloc.project?.title ?: "Program"
                                     Text(programName, fontSize = 15.sp,
-                                        fontWeight = FontWeight.SemiBold, color = Color.White)
-                                    Surface(
-                                        color = when (alloc.category) {
-                                            "COURSE"  -> Color(0x220A50B4)
-                                            "INTERN"  -> Color(0x22E66414)
-                                            else      -> Color(0x228B5CF6)
-                                        },
-                                        shape = RoundedCornerShape(4.dp)
-                                    ) {
-                                        Text(
-                                            alloc.category,
-                                            fontSize = 10.sp, fontWeight = FontWeight.SemiBold,
+                                        fontWeight = FontWeight.SemiBold, color = OnSurface)
+                                    Surface(color = when (alloc.category) {
+                                        "COURSE"  -> BrandMagentaLight
+                                        "INTERN"  -> BrandPurpleLight
+                                        else      -> SurfaceVariant
+                                    }, shape = RoundedCornerShape(4.dp)) {
+                                        Text(alloc.category, fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold,
                                             color = when (alloc.category) {
-                                                "COURSE"  -> Color(0xFF60A5FA)
-                                                "INTERN"  -> Color(0xFFE66414)
-                                                else      -> Color(0xFF8B5CF6)
+                                                "COURSE"  -> BrandMagenta
+                                                "INTERN"  -> BrandPurple
+                                                else      -> OnSurfaceMuted
                                             },
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                                        )
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp))
                                     }
                                 }
-                                StatusBadge(
-                                    alloc.projectStatus ?: alloc.internStatus
-                                    ?: alloc.courseStatus ?: alloc.allocationStatus
-                                )
+                                StatusBadge(alloc.projectStatus ?: alloc.internStatus
+                                ?: alloc.courseStatus ?: alloc.allocationStatus)
                             }
-
                             Spacer(Modifier.height(12.dp))
-                            Divider(color = Color(0x1AFFFFFF))
+                            Divider(color = Outline)
                             Spacer(Modifier.height(10.dp))
-
                             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                                 alloc.startDate?.let {
                                     Column {
-                                        Text("Start", fontSize = 10.sp, color = Color(0xFF64748B))
-                                        Text(it, fontSize = 12.sp, color = Color(0xFF94A3B8))
+                                        Text("Start", fontSize = 10.sp, color = OnSurfaceHint)
+                                        Text(it, fontSize = 12.sp, color = OnSurfaceMuted)
                                     }
                                 }
                                 alloc.endDate?.let {
                                     Column {
-                                        Text("End", fontSize = 10.sp, color = Color(0xFF64748B))
-                                        Text(it, fontSize = 12.sp, color = Color(0xFF94A3B8))
+                                        Text("End", fontSize = 10.sp, color = OnSurfaceHint)
+                                        Text(it, fontSize = 12.sp, color = OnSurfaceMuted)
                                     }
                                 }
                                 alloc.classStartTime?.let {
                                     Column {
-                                        Text("Timing", fontSize = 10.sp, color = Color(0xFF64748B))
-                                        Text("$it – ${alloc.classEndTime}", fontSize = 12.sp, color = Color(0xFF94A3B8))
+                                        Text("Timing", fontSize = 10.sp, color = OnSurfaceHint)
+                                        Text("$it – ${alloc.classEndTime}", fontSize = 12.sp, color = OnSurfaceMuted)
                                     }
                                 }
                             }
-
                             alloc.assignedEmployee?.let { emp ->
                                 Spacer(Modifier.height(10.dp))
-                                Surface(color = Color(0x0F60A5FA), shape = RoundedCornerShape(8.dp)) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth()
-                                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                                Surface(color = BrandMagentaLight, shape = RoundedCornerShape(8.dp)) {
+                                    Row(modifier = Modifier.fillMaxWidth()
+                                        .padding(horizontal = 10.dp, vertical = 6.dp),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                         Icon(Icons.Default.Person, null,
-                                            tint = Color(0xFF60A5FA), modifier = Modifier.size(16.dp))
-                                        Text("Mentor: ${emp.name}", fontSize = 12.sp, color = Color(0xFF93C5FD))
+                                            tint = BrandMagenta, modifier = Modifier.size(16.dp))
+                                        Text("Mentor: ${emp.name}", fontSize = 12.sp, color = BrandMagenta)
                                     }
                                 }
                             }
-
                             if (alloc.totalFee != null) {
                                 Spacer(Modifier.height(10.dp))
-                                Divider(color = Color(0x1AFFFFFF))
+                                Divider(color = Outline)
                                 Spacer(Modifier.height(10.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                                     Column {
-                                        Text("Total Fee", fontSize = 10.sp, color = Color(0xFF64748B))
-                                        Text("₹${"%,.0f".format(alloc.totalFee)}", fontSize = 13.sp, color = Color.White)
+                                        Text("Total Fee", fontSize = 10.sp, color = OnSurfaceHint)
+                                        Text("₹${"%,.0f".format(alloc.totalFee)}", fontSize = 13.sp, color = OnSurface)
                                     }
                                     Column {
-                                        Text("Paid", fontSize = 10.sp, color = Color(0xFF64748B))
-                                        Text("₹${"%,.0f".format(alloc.amountPaid ?: 0.0)}", fontSize = 13.sp, color = Color(0xFF10B981))
+                                        Text("Paid", fontSize = 10.sp, color = OnSurfaceHint)
+                                        Text("₹${"%,.0f".format(alloc.amountPaid ?: 0.0)}", fontSize = 13.sp, color = SuccessGreen)
                                     }
                                     Column {
-                                        Text("Balance", fontSize = 10.sp, color = Color(0xFF64748B))
+                                        Text("Balance", fontSize = 10.sp, color = OnSurfaceHint)
                                         Text("₹${"%,.0f".format(alloc.balanceDue ?: 0.0)}", fontSize = 13.sp,
-                                            color = if ((alloc.balanceDue ?: 0.0) > 0) Color(0xFFF59E0B) else Color(0xFF10B981))
+                                            color = if ((alloc.balanceDue ?: 0.0) > 0) WarningAmber else SuccessGreen)
                                     }
                                 }
                             }
