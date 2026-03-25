@@ -4,7 +4,7 @@ import {
     getCoursesByPage,
     updateCourse,
     deleteCourse
-} from "../api/services/CourseService";
+} from "../api/services/courseService";
 
 import "../styles/modal.css"
 
