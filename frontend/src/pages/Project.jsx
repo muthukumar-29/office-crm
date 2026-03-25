@@ -4,7 +4,7 @@ import {
   getProjectsByPage,
   updateProject,
   deleteProject
-} from "../api/services/ProjectService";
+} from "../api/services/projectService";
 
 import { getAllDomains } from "../api/services/domainService";
 
