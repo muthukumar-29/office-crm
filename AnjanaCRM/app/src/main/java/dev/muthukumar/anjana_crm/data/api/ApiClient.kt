@@ -11,7 +11,7 @@ object ApiClient {
     // For emulator: 10.0.2.2  |  For real device: your local IP e.g. 192.168.1.5
 //    private const val BASE_URL = "http://127.0.0.1:8080/api/"
 
-    private const val BASE_URL = "http://10.169.128.36:8080/api/"
+    private const val BASE_URL = "https://office-crm-backend.onrender.com/api/"
 
     private var tokenProvider: (() -> String?) = { null }
 
