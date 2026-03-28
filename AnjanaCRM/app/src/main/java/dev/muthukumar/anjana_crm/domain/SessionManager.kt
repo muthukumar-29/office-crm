@@ -18,4 +18,13 @@ class SessionManager(private val store: TokenStore) {
 
     suspend fun getRoleOnce()    = store.role.first()
     suspend fun clear()          = store.clear()
+
+    fun getNavigationDestination(): String {
+        val role = getRole() ?: return "login"
+        return when {
+            role.contains("ADMIN") -> "admin"
+            role == "STUDENT"      -> "student"
+            else                   -> "employee"
+        }
+    }
 }

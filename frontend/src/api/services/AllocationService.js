@@ -1,3 +1,6 @@
+// frontend/src/api/services/allocationService.js
+// RENAME AllocationService.js → allocationService.js (Linux case-sensitive fix)
+
 import apiClient from '../apiClient'
 
 export const getAllAllocations        = ()           => apiClient.get('/allocations')

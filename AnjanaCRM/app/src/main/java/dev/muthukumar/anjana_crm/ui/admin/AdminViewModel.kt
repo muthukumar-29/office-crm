@@ -85,14 +85,6 @@ class AdminViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // ── Salary ────────────────────────────────────────────────
-    fun markSalaryPaid(id: Long) {
-        viewModelScope.launch {
-            try { api.markSalaryPaid(id); loadAll() }
-            catch (_: Exception) {}
-        }
-    }
-
     fun createSalary(request: SalaryRequest) {
         viewModelScope.launch {
             try { api.createSalary(request); loadAll() }
@@ -136,4 +128,102 @@ class AdminViewModel(app: Application) : AndroidViewModel(app) {
             catch (_: Exception) {}
         }
     }
+
+    fun loadSalaries() {
+        viewModelScope.launch {
+            try {
+                val res = ApiClient.service.getAllSalaries()
+                if (res.isSuccessful) {
+                    val list = res.body()?.data ?: res.body() ?: emptyList()
+                    _state.update { it.copy(salaries = list) }
+                }
+            } catch (e: Exception) { /* ignore */ }
+        }
+    }
+
+    // ── Generate salary ────────────────────────────────────────────
+    fun generateSalary(
+        employeeId: Long, payMonth: String,
+        basicSalary: Double, hra: Double = 0.0,
+        transportAllowance: Double = 0.0, otherAllowance: Double = 0.0,
+        bonus: Double = 0.0, pfDeduction: Double = 0.0,
+        taxDeduction: Double = 0.0, otherDeduction: Double = 0.0,
+        paymentMode: String = "BANK_TRANSFER",
+        transactionRef: String? = null, notes: String? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                val payload = mapOf(
+                    "employeeId"         to employeeId,
+                    "payMonth"           to payMonth,
+                    "basicSalary"        to basicSalary,
+                    "hra"                to hra,
+                    "transportAllowance" to transportAllowance,
+                    "otherAllowance"     to otherAllowance,
+                    "bonus"              to bonus,
+                    "pfDeduction"        to pfDeduction,
+                    "taxDeduction"       to taxDeduction,
+                    "otherDeduction"     to otherDeduction,
+                    "paymentMode"        to paymentMode,
+                    "transactionRef"     to transactionRef,
+                    "notes"              to notes
+                )
+                ApiClient.service.createSalary(payload)
+                loadSalaries()
+            } catch (e: Exception) { /* handle error */ }
+        }
+    }
+
+    // ── Mark salary as paid ────────────────────────────────────────
+    fun markSalaryPaid(id: Long) {
+        viewModelScope.launch {
+            try {
+                ApiClient.service.markSalaryPaid(id)
+                loadSalaries()
+            } catch (e: Exception) { /* handle error */ }
+        }
+    }
+
+    // ── Finance: load transactions + summary ───────────────────────
+    fun loadFinance(start: String? = null, end: String? = null) {
+        viewModelScope.launch {
+            try {
+                val tRes = ApiClient.service.getAllTransactions(start, end)
+                val sRes = ApiClient.service.getFinanceSummary(start, end)
+                if (tRes.isSuccessful) {
+                    val txns = tRes.body()?.data ?: tRes.body() ?: emptyList()
+                    _state.update { it.copy(transactions = txns) }
+                }
+                if (sRes.isSuccessful) {
+                    val summary = sRes.body()?.data ?: sRes.body()
+                    _state.update { it.copy(financeSummary = summary) }
+                }
+            } catch (e: Exception) { /* handle error */ }
+        }
+    }
+
+    // ── Record finance transaction ─────────────────────────────────
+    fun recordTransaction(
+        type: String, amount: Double, category: String,
+        description: String? = null, paymentMode: String = "CASH",
+        transactionDate: String, referenceNo: String? = null, notes: String? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                val payload = mapOf(
+                    "type"            to type,
+                    "amount"          to amount,
+                    "category"        to category,
+                    "description"     to description,
+                    "paymentMode"     to paymentMode,
+                    "transactionDate" to transactionDate,
+                    "referenceNo"     to referenceNo,
+                    "notes"           to notes
+                )
+                ApiClient.service.createTransaction(payload)
+                loadFinance()   // reload after save
+            } catch (e: Exception) { /* handle error */ }
+        }
+    }
+
 }

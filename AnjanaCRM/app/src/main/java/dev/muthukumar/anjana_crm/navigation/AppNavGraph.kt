@@ -28,11 +28,19 @@ fun AppNavGraph() {
     NavHost(navController = navController, startDestination = startDest) {
 
         composable(Screen.Login.route) {
-            LoginScreen(onLoginSuccess = { role ->
-                navController.navigate(roleStartScreen(role)) {
-                    popUpTo(Screen.Login.route) { inclusive = true }
+            LoginScreen(
+                onLoginSuccess = {
+                    val dest = when (vm.uiState.value.navigateTo) {
+                        "admin"    -> Screen.AdminDashboard.route
+                        "employee" -> Screen.EmployeeDashboard.route
+                        "student"  -> Screen.StudentDashboard.route
+                        else       -> Screen.AdminDashboard.route
+                    }
+                    navController.navigate(dest) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
-            })
+            )
         }
 
         // ── Admin / Super Admin ───────────────────────────────

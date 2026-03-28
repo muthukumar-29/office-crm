@@ -1,17 +1,24 @@
 package dev.muthukumar.anjana_crm.data.model
 
 data class Salary(
-    val id: Long,
-    val payMonth: String,
-    val basicSalary: Double,
-    val grossSalary: Double,
-    val netSalary: Double,
-    val pfDeduction: Double,
-    val taxDeduction: Double,
-    val otherDeduction: Double,
-    val status: String,
-    val paymentMode: String?,
-    val employee: User?
+    val id: Long = 0,
+    val employee: User? = null,
+    val payMonth: String? = null,
+    val basicSalary: Double? = null,
+    val hra: Double? = null,
+    val transportAllowance: Double? = null,
+    val otherAllowance: Double? = null,
+    val bonus: Double? = null,
+    val grossSalary: Double? = null,
+    val pfDeduction: Double? = null,
+    val taxDeduction: Double? = null,
+    val otherDeduction: Double? = null,
+    val netSalary: Double? = null,
+    val paymentMode: String? = null,
+    val transactionRef: String? = null,
+    val notes: String? = null,
+    val status: String? = null,
+    val paidAt: String? = null
 )
 
 data class SalaryRequest(

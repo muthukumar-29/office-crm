@@ -53,18 +53,11 @@ interface ApiService {
         @Query("end") end: String
     ): Response<ApiListResponse<Payment>>
 
-    // ── Salary ────────────────────────────────────────────────
-    @GET("salary")
-    suspend fun getAllSalaries(): Response<List<Salary>>
-
     @GET("salary/employee/{id}")
     suspend fun getSalaryByEmployee(@Path("id") id: Long): Response<List<Salary>>
 
     @POST("salary")
     suspend fun createSalary(@Body body: SalaryRequest): Response<Salary>
-
-    @PATCH("salary/{id}/pay")
-    suspend fun markSalaryPaid(@Path("id") id: Long): Response<Salary>
 
     // ── Invoices ──────────────────────────────────────────────
     @GET("invoices")
@@ -75,13 +68,6 @@ interface ApiService {
 
     @PATCH("invoices/{id}/pay")
     suspend fun markInvoicePaid(@Path("id") id: Long): Response<ApiResponse<Invoice>>
-
-    // ── Finance summary ───────────────────────────────────────
-    @GET("finance/summary")
-    suspend fun getFinanceSummary(
-        @Query("start") start: String? = null,
-        @Query("end") end: String? = null
-    ): Response<ApiResponse<FinanceSummary>>
 
     // ── Finance transactions ──────────────────────────────────
     @GET("finance/transactions")
@@ -109,4 +95,31 @@ interface ApiService {
 
     @GET("tickets")
     suspend fun getTickets(): Response<ApiListResponse<Ticket>>
+
+    // Salary
+    @GET("salary")
+    suspend fun getAllSalaries(): Response<ApiResponse<List<Salary>>>
+
+    @POST("salary")
+    suspend fun createSalary(@Body body: Map<String, Any?>): Response<ApiResponse<Salary>>
+
+    @PATCH("salary/{id}/pay")
+    suspend fun markSalaryPaid(@Path("id") id: Long): Response<ApiResponse<Salary>>
+
+    // Finance
+    @GET("finance/transactions")
+    suspend fun getAllTransactions(
+        @Query("start") start: String? = null,
+        @Query("end") end: String? = null
+    ): Response<ApiResponse<List<Transaction>>>
+
+    @GET("finance/summary")
+    suspend fun getFinanceSummary(
+        @Query("start") start: String? = null,
+        @Query("end") end: String? = null
+    ): Response<ApiResponse<FinanceSummary>>
+
+    @POST("finance/transactions")
+    suspend fun createTransaction(@Body body: Map<String, Any?>): Response<ApiResponse<Transaction>>
+
 }
