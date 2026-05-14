@@ -1,5 +1,6 @@
 package dev.muthukumar.anjana_crm.data.api
 
+import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -9,9 +10,9 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
     // Change to your backend IP when testing on a real device
     // For emulator: 10.0.2.2  |  For real device: your local IP e.g. 192.168.1.5
-    private const val BASE_URL = "http://127.0.0.1:8080/api/"
+//    private const val BASE_URL = "http://127.0.0.1:8080/api/"
 
-//    private const val BASE_URL = "https://office-crm-backend.onrender.com/api/"
+    private const val BASE_URL = "https://office-crm-backend.onrender.com/api/"
 
     private var tokenProvider: (() -> String?) = { null }
 
@@ -30,11 +31,17 @@ object ApiClient {
             .build()
     }
 
+    private val gson by lazy {
+        GsonBuilder()
+            .registerTypeAdapterFactory(FlexibleAdapterFactory())
+            .create()
+    }
+
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttp)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 

@@ -111,14 +111,14 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                         label = { Text("Filter by Employee") },
                         shape  = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor   = BrandMagenta,
-                            unfocusedBorderColor = Color(0xFF334155),
-                            focusedTextColor     = Color.White,
-                            unfocusedTextColor   = Color.White,
-                            focusedContainerColor   = SurfaceDark,
-                            unfocusedContainerColor = SurfaceDark,
-                            focusedLabelColor    = BrandMagenta,
-                            unfocusedLabelColor  = Color(0xFF94A3B8)
+                            focusedBorderColor      = BrandMagenta,
+                            unfocusedBorderColor    = Outline,
+                            focusedTextColor        = OnSurface,
+                            unfocusedTextColor      = OnSurface,
+                            focusedContainerColor   = White,
+                            unfocusedContainerColor = Color(0xFFFAF7FB),
+                            focusedLabelColor       = BrandMagenta,
+                            unfocusedLabelColor     = OnSurfaceMuted
                         )
                     )
                     ExposedDropdownMenu(expanded = empExpanded, onDismissRequest = { empExpanded = false }) {
@@ -149,7 +149,8 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
         Dialog(onDismissRequest = { showDialog = false }) {
             Card(
                 shape  = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+                colors = CardDefaults.cardColors(containerColor = White),
+                elevation = CardDefaults.cardElevation(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -158,7 +159,7 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                         .verticalScroll(rememberScrollState())
                 ) {
                     Text("Generate Salary", fontWeight = FontWeight.Bold,
-                        color = Color.White, fontSize = 16.sp)
+                        color = OnSurface, fontSize = 16.sp)
                     Spacer(Modifier.height(14.dp))
 
                     // Employee
@@ -174,7 +175,7 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                         )
                         ExposedDropdownMenu(expanded = empExp, onDismissRequest = { empExp = false }) {
                             state.users.forEach { u ->
-                                DropdownMenuItem(text = { Text("${u.name} — ${u.role}", color = Color.White) }, onClick = { empId = u.id.toString(); empExp = false })
+                                DropdownMenuItem(text = { Text("${u.name} — ${u.role}", color = OnSurface) }, onClick = { empId = u.id.toString(); empExp = false })
                             }
                         }
                     }
@@ -192,7 +193,7 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                                 shape = RoundedCornerShape(10.dp), colors = salDlgColors()
                             )
                             ExposedDropdownMenu(expanded = yearExp, onDismissRequest = { yearExp = false }) {
-                                YEARS.forEach { y -> DropdownMenuItem(text = { Text(y, color = Color.White) }, onClick = { selYear = y; yearExp = false }) }
+                                YEARS.forEach { y -> DropdownMenuItem(text = { Text(y, color = OnSurface) }, onClick = { selYear = y; yearExp = false }) }
                             }
                         }
                         var monExp by remember { mutableStateOf(false) }
@@ -205,7 +206,7 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                                 shape = RoundedCornerShape(10.dp), colors = salDlgColors()
                             )
                             ExposedDropdownMenu(expanded = monExp, onDismissRequest = { monExp = false }) {
-                                MONTHS.forEach { (v, l) -> DropdownMenuItem(text = { Text(l, color = Color.White) }, onClick = { selMonth = v; monExp = false }) }
+                                MONTHS.forEach { (v, l) -> DropdownMenuItem(text = { Text(l, color = OnSurface) }, onClick = { selMonth = v; monExp = false }) }
                             }
                         }
                     }
@@ -230,11 +231,11 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
 
                     // Live net pay
                     Spacer(Modifier.height(10.dp))
-                    Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A))) {
+                    Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = SurfaceVariant)) {
                         Row(Modifier.padding(14.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                            NetItem("Gross",      "₹${"%.0f".format(gross)}",      Color(0xFF94A3B8))
-                            NetItem("Deductions", "₹${"%.0f".format(deductions)}", Color(0xFFEF4444))
-                            NetItem("Net Pay",    "₹${"%.0f".format(net)}",        Color(0xFF38BDF8))
+                            NetItem("Gross",      "₹${"%.0f".format(gross)}",      OnSurfaceMuted)
+                            NetItem("Deductions", "₹${"%.0f".format(deductions)}", ErrorRed)
+                            NetItem("Net Pay",    "₹${"%.0f".format(net)}",        BrandMagenta)
                         }
                     }
 
@@ -251,7 +252,7 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                             shape = RoundedCornerShape(10.dp), colors = salDlgColors()
                         )
                         ExposedDropdownMenu(expanded = modeExp, onDismissRequest = { modeExp = false }) {
-                            PAY_MODES.forEach { m -> DropdownMenuItem(text = { Text(m, color = Color.White) }, onClick = { payMode = m; modeExp = false }) }
+                            PAY_MODES.forEach { m -> DropdownMenuItem(text = { Text(m, color = OnSurface) }, onClick = { payMode = m; modeExp = false }) }
                         }
                     }
                     Spacer(Modifier.height(8.dp))
@@ -363,13 +364,13 @@ private fun SalaryCard(sal: Salary, vm: AdminViewModel) {
 
 @Composable private fun NetItem(label: String, value: String, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, fontSize = 10.sp, color = Color(0xFF94A3B8))
+        Text(label, fontSize = 10.sp, color = OnSurfaceMuted)
         Text(value, fontSize = 14.sp, color = color, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable private fun SalDlgLabel(text: String) {
-    Text(text, fontSize = 11.sp, color = Color(0xFF94A3B8), fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 10.dp, bottom = 4.dp))
+    Text(text, fontSize = 11.sp, color = OnSurfaceMuted, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 10.dp, bottom = 4.dp))
 }
 
 @Composable private fun SalDlgField(label: String, value: String, onValue: (String) -> Unit) {
@@ -382,10 +383,15 @@ private fun SalaryCard(sal: Salary, vm: AdminViewModel) {
 }
 
 @Composable private fun salDlgColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor   = BrandMagenta, unfocusedBorderColor  = Color(0xFF334155),
-    focusedTextColor     = Color.White,  unfocusedTextColor    = Color.White,
-    cursorColor          = BrandMagenta,
-    focusedContainerColor   = Color(0xFF1E293B), unfocusedContainerColor = Color(0xFF1E293B),
-    focusedPlaceholderColor = Color(0xFF475569), unfocusedPlaceholderColor = Color(0xFF475569),
-    focusedLabelColor    = BrandMagenta, unfocusedLabelColor   = Color(0xFF94A3B8)
+    focusedBorderColor        = BrandMagenta,
+    unfocusedBorderColor      = Outline,
+    focusedTextColor          = OnSurface,
+    unfocusedTextColor        = OnSurface,
+    cursorColor               = BrandMagenta,
+    focusedContainerColor     = White,
+    unfocusedContainerColor   = Color(0xFFFAF7FB),
+    focusedPlaceholderColor   = OnSurfaceHint,
+    unfocusedPlaceholderColor = OnSurfaceHint,
+    focusedLabelColor         = BrandMagenta,
+    unfocusedLabelColor       = OnSurfaceMuted
 )

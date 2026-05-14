@@ -1,32 +1,31 @@
 package dev.muthukumar.anjana_crm.navigation
 
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import dev.muthukumar.anjana_crm.data.store.TokenStore
 import dev.muthukumar.anjana_crm.ui.admin.*
 import dev.muthukumar.anjana_crm.ui.auth.LoginScreen
+import dev.muthukumar.anjana_crm.ui.auth.SplashScreen
 import dev.muthukumar.anjana_crm.ui.employee.*
 import dev.muthukumar.anjana_crm.ui.student.*
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 
 @Composable
 fun AppNavGraph() {
-    val context = LocalContext.current
-    val store = remember { TokenStore(context) }
     val navController = rememberNavController()
 
-    val startDest = remember {
-        val token = runBlocking { store.token.first() }
-        val role  = runBlocking { store.role.first() }
-        if (token == null) Screen.Login.route else roleStartScreen(role)
-    }
+    NavHost(navController = navController, startDestination = Screen.Splash.route) {
 
-    NavHost(navController = navController, startDestination = startDest) {
+        // ── Splash ────────────────────────────────────────────
+        composable(Screen.Splash.route) {
+            SplashScreen { dest ->
+                navController.navigate(dest) {
+                    popUpTo(Screen.Splash.route) { inclusive = true }
+                }
+            }
+        }
 
+        // ── Auth ──────────────────────────────────────────────
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = { navigateTo ->
@@ -73,8 +72,8 @@ fun AppNavGraph() {
 }
 
 fun roleStartScreen(role: String?): String = when (role) {
-    "SUPER_ADMIN", "ADMIN" -> Screen.AdminDashboard.route
-    "EMPLOYEE", "SUB_ADMIN" -> Screen.EmployeeDashboard.route
-    "STUDENT" -> Screen.StudentDashboard.route
-    else -> Screen.Login.route
+    "SUPER_ADMIN", "ADMIN"        -> Screen.AdminDashboard.route
+    "EMPLOYEE", "SUB_ADMIN"       -> Screen.EmployeeDashboard.route
+    "STUDENT"                     -> Screen.StudentDashboard.route
+    else                          -> Screen.Login.route
 }

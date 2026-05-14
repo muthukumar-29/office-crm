@@ -198,7 +198,8 @@ fun AdminFinanceScreen(navController: NavController, vm: AdminViewModel = viewMo
         }) {
             Card(
                 shape  = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+                colors = CardDefaults.cardColors(containerColor = White),
+                elevation = CardDefaults.cardElevation(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -207,7 +208,7 @@ fun AdminFinanceScreen(navController: NavController, vm: AdminViewModel = viewMo
                         .verticalScroll(rememberScrollState())
                 ) {
                     Text("Add Transaction", fontWeight = FontWeight.Bold,
-                        color = Color.White, fontSize = 16.sp)
+                        color = OnSurface, fontSize = 16.sp)
                     Spacer(Modifier.height(14.dp))
 
                     // Type toggle
@@ -222,7 +223,11 @@ fun AdminFinanceScreen(navController: NavController, vm: AdminViewModel = viewMo
                                     containerColor = when {
                                         sel && t=="INCOME"  -> Color(0xFF10B981)
                                         sel && t=="EXPENSE" -> Color(0xFFEF4444)
-                                        else -> Color(0xFF1E293B)
+                                        else -> SurfaceVariant
+                                    },
+                                    contentColor = when {
+                                        sel -> Color.White
+                                        else -> OnSurfaceMuted
                                     }
                                 )
                             ) { Text(if (t=="INCOME") "⬆ Income" else "⬇ Expense", fontSize = 12.sp) }
@@ -254,7 +259,7 @@ fun AdminFinanceScreen(navController: NavController, vm: AdminViewModel = viewMo
                         )
                         ExposedDropdownMenu(expanded = catExp, onDismissRequest = { catExp = false }) {
                             (if (txnType=="INCOME") INC_CATS else EXP_CATS).forEach { c ->
-                                DropdownMenuItem(text = { Text(c, color = Color.White) }, onClick = { category = c; catExp = false })
+                                DropdownMenuItem(text = { Text(c, color = OnSurface) }, onClick = { category = c; catExp = false })
                             }
                         }
                     }
@@ -294,7 +299,7 @@ fun AdminFinanceScreen(navController: NavController, vm: AdminViewModel = viewMo
                         )
                         ExposedDropdownMenu(expanded = modeExp, onDismissRequest = { modeExp = false }) {
                             PAY_MODES.forEach { m ->
-                                DropdownMenuItem(text = { Text(m, color = Color.White) }, onClick = { payMode = m; modeExp = false })
+                                DropdownMenuItem(text = { Text(m, color = OnSurface) }, onClick = { payMode = m; modeExp = false })
                             }
                         }
                     }
@@ -355,21 +360,21 @@ fun AdminFinanceScreen(navController: NavController, vm: AdminViewModel = viewMo
 
 @Composable
 private fun DlgLabel(text: String) {
-    Text(text, fontSize = 11.sp, color = Color(0xFF94A3B8),
+    Text(text, fontSize = 11.sp, color = OnSurfaceMuted,
         fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 4.dp))
 }
 
 @Composable
 private fun dlgColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor      = BrandMagenta,
-    unfocusedBorderColor    = Color(0xFF334155),
-    focusedTextColor        = Color.White,
-    unfocusedTextColor      = Color.White,
-    cursorColor             = BrandMagenta,
-    focusedContainerColor   = Color(0xFF1E293B),
-    unfocusedContainerColor = Color(0xFF1E293B),
-    focusedPlaceholderColor = Color(0xFF475569),
-    unfocusedPlaceholderColor = Color(0xFF475569),
+    focusedBorderColor        = BrandMagenta,
+    unfocusedBorderColor      = Outline,
+    focusedTextColor          = OnSurface,
+    unfocusedTextColor        = OnSurface,
+    cursorColor               = BrandMagenta,
+    focusedContainerColor     = White,
+    unfocusedContainerColor   = Color(0xFFFAF7FB),
+    focusedPlaceholderColor   = OnSurfaceHint,
+    unfocusedPlaceholderColor = OnSurfaceHint,
 )
 
 @Composable

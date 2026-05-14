@@ -203,6 +203,22 @@ fun PrimaryButton(
     }
 }
 
+// ── Shared light-theme input field colors (use in any screen) ────────────────
+@Composable
+fun crmFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor        = BrandMagenta,
+    unfocusedBorderColor      = Outline,
+    focusedTextColor          = OnSurface,
+    unfocusedTextColor        = OnSurface,
+    cursorColor               = BrandMagenta,
+    focusedContainerColor     = White,
+    unfocusedContainerColor   = Color(0xFFFAF7FB),
+    focusedLabelColor         = BrandMagenta,
+    unfocusedLabelColor       = OnSurfaceMuted,
+    focusedPlaceholderColor   = OnSurfaceHint,
+    unfocusedPlaceholderColor = OnSurfaceHint,
+)
+
 // ── Divider with label ───────────────────────────────────────
 @Composable
 fun LabelDivider(label: String) {

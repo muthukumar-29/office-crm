@@ -1,6 +1,7 @@
 package dev.muthukumar.anjana_crm.navigation
 
 sealed class Screen(val route: String) {
+    object Splash              : Screen("splash")
     object Login               : Screen("login")
 
     // Admin / Super Admin

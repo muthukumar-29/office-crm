@@ -2,7 +2,10 @@ package dev.muthukumar.anjana_crm.ui.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +19,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.muthukumar.anjana_crm.ui.common.crmFieldColors
 import dev.muthukumar.anjana_crm.ui.theme.*
 
 // ── Login screen — supports Staff login (email + password)
@@ -45,39 +49,49 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(PageBg),
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0xFF4A0060), BrandPurple, Color(0xFFD0308A)),
+                    startY = 0f,
+                    endY   = 900f
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 28.dp),
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ── Brand ─────────────────────────────────────
+            // ── Brand header ───────────────────────────────
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(CircleShape)
+                    .background(White.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("A", fontSize = 36.sp, fontWeight = FontWeight.Black, color = White)
+            }
+            Spacer(Modifier.height(12.dp))
             Text(
                 "Anjana Infotech",
-                fontSize = 26.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = BrandMagenta
-            )
-            Text(
-                "ISO 9001:2015 Certified",
-                fontSize = 11.sp,
-                color = Color(0xFF94A3B8),
-                modifier = Modifier.padding(top = 2.dp)
+                color = White
             )
             Text(
                 "Office CRM",
-                fontSize = 13.sp,
-                color = Color(0xFF64748B),
-                modifier = Modifier.padding(top = 4.dp, bottom = 28.dp)
+                fontSize = 12.sp,
+                color = White.copy(alpha = 0.7f),
+                modifier = Modifier.padding(top = 2.dp, bottom = 24.dp)
             )
 
             // ── Tab selector ───────────────────────────────
-            Card(
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = White.copy(alpha = 0.12f),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(Modifier.fillMaxWidth().padding(4.dp)) {
@@ -90,10 +104,10 @@ fun LoginScreen(
                                 email = ""; password = ""; rollNo = ""
                             },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(8.dp),
+                            shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (selected) BrandMagenta else Color.Transparent,
-                                contentColor   = if (selected) Color.White  else Color(0xFF94A3B8)
+                                containerColor = if (selected) White else Color.Transparent,
+                                contentColor   = if (selected) BrandMagenta else White.copy(alpha = 0.7f)
                             ),
                             elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp)
                         ) { Text(label, fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
@@ -101,20 +115,21 @@ fun LoginScreen(
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(16.dp))
 
             // ── Form card ──────────────────────────────────
             Card(
-                shape  = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+                shape  = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(Modifier.padding(20.dp)) {
+                Column(Modifier.padding(24.dp)) {
 
                     if (selectedTab == 0) {
                         // ── STAFF LOGIN ──────────────────────────
                         Text("Sign in to your workspace",
-                            fontSize = 13.sp, color = Color(0xFF64748B),
+                            fontSize = 13.sp, color = OnSurfaceMuted,
                             modifier = Modifier.padding(bottom = 16.dp))
 
                         CrmField("Email") {
@@ -126,7 +141,7 @@ fun LoginScreen(
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                                 singleLine = true,
                                 shape = RoundedCornerShape(10.dp),
-                                colors = crmTextFieldColors()
+                                colors = crmFieldColors()
                             )
                         }
 
@@ -142,7 +157,7 @@ fun LoginScreen(
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                                 singleLine = true,
                                 shape = RoundedCornerShape(10.dp),
-                                colors = crmTextFieldColors(),
+                                colors = crmFieldColors(),
                                 trailingIcon = {
                                     TextButton(onClick = { showPass = !showPass }) {
                                         Text(if (showPass) "Hide" else "Show",
@@ -184,7 +199,7 @@ fun LoginScreen(
                                 placeholder = { Text("e.g. AI2024001", color = Color(0xFF475569)) },
                                 singleLine = true,
                                 shape = RoundedCornerShape(10.dp),
-                                colors = crmTextFieldColors()
+                                colors = crmFieldColors()
                             )
                         }
 
@@ -202,7 +217,7 @@ fun LoginScreen(
                             Text(
                                 "Your roll number is used as both username and password.",
                                 fontSize = 11.sp,
-                                color = Color(0xFF94A3B8)
+                                color = BrandMagenta.copy(alpha = 0.8f)
                             )
                         }
 
@@ -249,8 +264,8 @@ fun LoginScreen(
             Text(
                 "372, Mudangiyar Road, Rajapalayam • +91 97879 70633",
                 fontSize = 11.sp,
-                color = Color(0xFF475569),
-                modifier = Modifier.padding(top = 8.dp)
+                color = White.copy(alpha = 0.6f),
+                modifier = Modifier.padding(top = 12.dp)
             )
         }
     }
@@ -261,18 +276,7 @@ fun LoginScreen(
 @Composable
 private fun CrmField(label: String, content: @Composable () -> Unit) {
     Text(label, fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
-        color = Color(0xFF94A3B8), letterSpacing = 1.sp,
+        color = OnSurfaceMuted, letterSpacing = 0.8.sp,
         modifier = Modifier.padding(bottom = 6.dp))
     content()
 }
-
-@Composable
-private fun crmTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor   = BrandMagenta,
-    unfocusedBorderColor = Color(0xFF334155),
-    focusedTextColor     = Color.White,
-    unfocusedTextColor   = Color.White,
-    cursorColor          = BrandMagenta,
-    focusedContainerColor   = Color(0xFF1E293B),
-    unfocusedContainerColor = Color(0xFF1E293B),
-)
