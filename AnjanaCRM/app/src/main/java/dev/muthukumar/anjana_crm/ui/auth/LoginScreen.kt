@@ -22,7 +22,7 @@ import dev.muthukumar.anjana_crm.ui.theme.*
 //                 and Student login (rollNo + rollNo as password)
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (String) -> Unit,
     vm: LoginViewModel = viewModel()
 ) {
     val uiState by vm.uiState.collectAsState()
@@ -39,7 +39,7 @@ fun LoginScreen(
     var rollNo by remember { mutableStateOf("") }
 
     LaunchedEffect(uiState.navigateTo) {
-        if (uiState.navigateTo != null) onLoginSuccess()
+        if (uiState.navigateTo != null) onLoginSuccess(uiState.navigateTo!!)
     }
 
     Box(

@@ -4,16 +4,13 @@ import {
   CCloseButton,
   CSidebar,
   CSidebarBrand,
-  CSidebarFooter,
   CSidebarHeader,
-  CSidebarToggler,
 } from '@coreui/react'
 import { AppSidebarNav } from './AppSidebarNav'
 import navigation from '../_nav'
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
-  const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
 
   return (
@@ -21,7 +18,6 @@ const AppSidebar = () => {
       className="border-end"
       colorScheme="dark"
       position="fixed"
-      unfoldable={unfoldable}
       visible={sidebarShow}
       onVisibleChange={(visible) => {
         dispatch({ type: 'set', sidebarShow: visible })
@@ -33,7 +29,7 @@ const AppSidebar = () => {
             <div style={{
               fontSize: '1.05rem',
               fontWeight: 800,
-              color: '#60a5fa',
+              color: '#38bdf8',
               letterSpacing: '-0.02em',
               lineHeight: 1.1,
             }}>
@@ -41,7 +37,7 @@ const AppSidebar = () => {
             </div>
             <div style={{
               fontSize: '0.65rem',
-              color: '#64748b',
+              color: 'rgba(148, 163, 184, 0.65)',
               marginTop: '2px',
               letterSpacing: '0.04em',
             }}>
@@ -51,16 +47,11 @@ const AppSidebar = () => {
         </CSidebarBrand>
         <CCloseButton
           className="d-lg-none"
-          dark
+          style={{ filter: 'invert(1) brightness(2)' }}
           onClick={() => dispatch({ type: 'set', sidebarShow: false })}
         />
       </CSidebarHeader>
       <AppSidebarNav items={navigation} />
-      <CSidebarFooter className="border-top d-none d-lg-flex">
-        <CSidebarToggler
-          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
-        />
-      </CSidebarFooter>
     </CSidebar>
   )
 }

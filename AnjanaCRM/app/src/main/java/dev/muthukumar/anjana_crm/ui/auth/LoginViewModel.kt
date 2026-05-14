@@ -1,10 +1,12 @@
 package dev.muthukumar.anjana_crm.ui.auth
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.muthukumar.anjana_crm.data.api.ApiClient
+import dev.muthukumar.anjana_crm.data.model.LoginData
 import dev.muthukumar.anjana_crm.data.model.LoginRequest
-import dev.muthukumar.anjana_crm.domain.SessionManager
+import dev.muthukumar.anjana_crm.data.store.TokenStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -15,8 +17,9 @@ data class LoginUiState(
     val navigateTo: String? = null   // "admin" | "employee" | "student"
 )
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(app: Application) : AndroidViewModel(app) {
 
+    private val store = TokenStore(app)
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
 
@@ -28,13 +31,13 @@ class LoginViewModel : ViewModel() {
                 val res  = ApiClient.service.login(LoginRequest(email, password))
                 val body = res.body()
                 if (res.isSuccessful && body != null) {
-                    val data  = body.data ?: body
-                    val token = data.token ?: ""
-                    val role  = data.role  ?: "EMPLOYEE"
-                    val name  = data.name  ?: email
-                    val id    = data.id    ?: data.userId ?: ""
-                    SessionManager.save(token, role, name, id.toString())
-                    val dest = if (role.contains("ADMIN")) "admin" else "employee"
+                    val data = body.data
+                    if (data == null) {
+                        _uiState.value = LoginUiState(error = "Invalid response from server")
+                        return@launch
+                    }
+                    store.save(data.token, data.role, data.name, data.email, data.id.toString())
+                    val dest = if (data.role.contains("ADMIN")) "admin" else "employee"
                     _uiState.value = LoginUiState(navigateTo = dest)
                 } else {
                     val errMsg = res.errorBody()?.string() ?: "Invalid credentials"
@@ -51,18 +54,16 @@ class LoginViewModel : ViewModel() {
         _uiState.value = LoginUiState(loading = true)
         viewModelScope.launch {
             try {
-                // First try rollNo directly as email (preferred)
                 val res = ApiClient.service.login(LoginRequest(rollNo, rollNo))
                 val body = res.body()
 
                 if (res.isSuccessful && body != null) {
-                    saveAndNavigate(body.data ?: body, rollNo)
+                    saveAndNavigate(body.data, rollNo)
                 } else {
-                    // Fallback: try email format
                     val res2  = ApiClient.service.login(LoginRequest("$rollNo@student.crm", rollNo))
                     val body2 = res2.body()
                     if (res2.isSuccessful && body2 != null) {
-                        saveAndNavigate(body2.data ?: body2, rollNo)
+                        saveAndNavigate(body2.data, rollNo)
                     } else {
                         _uiState.value = LoginUiState(
                             error = "Roll number not found. Please contact your administrator."
@@ -75,23 +76,13 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    private fun saveAndNavigate(data: Any, fallbackName: String) {
-        // data could be LoginResponse or nested data object — use reflection-safe approach
-        val token = getField(data, "token") ?: ""
-        val role  = getField(data, "role")  ?: "STUDENT"
-        val name  = getField(data, "name")  ?: fallbackName
-        val id    = getField(data, "id")    ?: getField(data, "userId") ?: ""
-        SessionManager.save(token, role, name, id)
+    private suspend fun saveAndNavigate(data: LoginData?, fallbackName: String) {
+        if (data == null) {
+            _uiState.value = LoginUiState(error = "Invalid response from server")
+            return
+        }
+        store.save(data.token, data.role, data.name, data.email, data.id.toString())
         _uiState.value = LoginUiState(navigateTo = "student")
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun getField(obj: Any, field: String): String? {
-        return try {
-            val f = obj.javaClass.getDeclaredField(field)
-            f.isAccessible = true
-            f.get(obj)?.toString()
-        } catch (e: Exception) { null }
     }
 
     fun clearError() {

@@ -51,7 +51,7 @@ class AdminViewModel(app: Application) : AndroidViewModel(app) {
                         allocations    = alloc.body()?.data ?: emptyList(),
                         students       = stud.body() ?: emptyList(),
                         certificates   = certs.body()?.data ?: emptyList(),
-                        salaries       = sal.body() ?: emptyList(),
+                        salaries       = sal.body()?.data ?: emptyList(),
                         invoices       = inv.body()?.data ?: emptyList(),
                         financeSummary = fin.body()?.data,
                         transactions   = trans?.body()?.data ?: emptyList(),
@@ -134,7 +134,7 @@ class AdminViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 val res = ApiClient.service.getAllSalaries()
                 if (res.isSuccessful) {
-                    val list = res.body()?.data ?: res.body() ?: emptyList()
+                    val list = res.body()?.data ?: emptyList()
                     _state.update { it.copy(salaries = list) }
                 }
             } catch (e: Exception) { /* ignore */ }
@@ -153,22 +153,20 @@ class AdminViewModel(app: Application) : AndroidViewModel(app) {
     ) {
         viewModelScope.launch {
             try {
-                val payload = mapOf(
-                    "employeeId"         to employeeId,
-                    "payMonth"           to payMonth,
-                    "basicSalary"        to basicSalary,
-                    "hra"                to hra,
-                    "transportAllowance" to transportAllowance,
-                    "otherAllowance"     to otherAllowance,
-                    "bonus"              to bonus,
-                    "pfDeduction"        to pfDeduction,
-                    "taxDeduction"       to taxDeduction,
-                    "otherDeduction"     to otherDeduction,
-                    "paymentMode"        to paymentMode,
-                    "transactionRef"     to transactionRef,
-                    "notes"              to notes
+                val request = SalaryRequest(
+                    employeeId         = employeeId,
+                    payMonth           = payMonth,
+                    basicSalary        = basicSalary,
+                    hra                = hra,
+                    transportAllowance = transportAllowance,
+                    otherAllowance     = otherAllowance,
+                    bonus              = bonus,
+                    pfDeduction        = pfDeduction,
+                    taxDeduction       = taxDeduction,
+                    otherDeduction     = otherDeduction,
+                    paymentMode        = paymentMode
                 )
-                ApiClient.service.createSalary(payload)
+                ApiClient.service.createSalary(request)
                 loadSalaries()
             } catch (e: Exception) { /* handle error */ }
         }
@@ -191,11 +189,11 @@ class AdminViewModel(app: Application) : AndroidViewModel(app) {
                 val tRes = ApiClient.service.getAllTransactions(start, end)
                 val sRes = ApiClient.service.getFinanceSummary(start, end)
                 if (tRes.isSuccessful) {
-                    val txns = tRes.body()?.data ?: tRes.body() ?: emptyList()
+                    val txns = tRes.body()?.data ?: emptyList()
                     _state.update { it.copy(transactions = txns) }
                 }
                 if (sRes.isSuccessful) {
-                    val summary = sRes.body()?.data ?: sRes.body()
+                    val summary = sRes.body()?.data
                     _state.update { it.copy(financeSummary = summary) }
                 }
             } catch (e: Exception) { /* handle error */ }

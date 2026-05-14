@@ -11,3 +11,4 @@ data class Transaction(
     val referenceNo: String? = null,
     val notes: String? = null
 )
+

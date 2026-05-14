@@ -174,7 +174,7 @@ export default function Allocations() {
             <thead>
               <tr>
                 <th>#</th><th>Student</th><th>Category</th><th>Program</th>
-                <th>Employee</th><th>Timing</th>
+                <th>Mentor</th><th>Timing</th>
                 <th>Fee</th><th>Paid</th><th>Balance</th><th>Payment</th><th>Status</th>
                 {isAdmin() && <th>Actions</th>}
               </tr>
@@ -215,7 +215,7 @@ export default function Allocations() {
                     {isAdmin() && (
                       <td>
                         <div className="d-flex gap-1">
-                          <button className="btn-crm-icon info" title="Assign Employee / Timing" onClick={() => openAssign(a)}>👤</button>
+                          <button className="btn-crm-icon info" title="Assign Mentor / Timing" onClick={() => openAssign(a)}>👤</button>
                           <button className="btn-crm-icon success" title="Update Status" onClick={() => openStatus(a)}>⚙</button>
                         </div>
                       </td>
@@ -270,7 +270,7 @@ export default function Allocations() {
             </Field>
           </div>
           <div className="col-md-6">
-            <Field label="Assigned Employee (Responsible)">
+            <Field label="Assign Mentor / Project Head">
               <select className="crm-input" name="assignedEmployeeId" value={form.assignedEmployeeId} onChange={handleFormChange}>
                 <option value="">-- No assignment --</option>
                 {employees.map(e => <option key={e.id} value={e.id}>{e.name} ({e.role})</option>)}
@@ -313,14 +313,14 @@ export default function Allocations() {
       </CrmModal>
 
       {/* ── Assign Employee / Timing Modal ─────────────────────────────────── */}
-      <CrmModal show={showAssign} onClose={() => setShowAssign(false)} title="Assign Employee & Timing" size="modal-md"
+      <CrmModal show={showAssign} onClose={() => setShowAssign(false)} title="Assign Mentor & Timing" size="modal-md"
         footer={<>
           <button className="btn-crm-ghost" onClick={() => setShowAssign(false)}>Cancel</button>
           <button className="btn-crm-primary" disabled={loading} onClick={saveAssign}>Save</button>
         </>}>
         <div className="row g-3">
           <div className="col-12">
-            <Field label="Responsible Employee">
+            <Field label="Mentor / Project Head">
               <select className="crm-input" value={assignForm.assignedEmployeeId} onChange={e => setAssignForm(p => ({ ...p, assignedEmployeeId: e.target.value }))}>
                 <option value="">-- No assignment --</option>
                 {employees.map(e => <option key={e.id} value={e.id}>{e.name} — {e.position||e.role}</option>)}

@@ -39,7 +39,7 @@ class EmployeeViewModel(app: Application) : AndroidViewModel(app) {
                     it.copy(
                         loading     = false,
                         allocations = alloc.body()?.data ?: emptyList(),
-                        salaries    = sal.body() ?: emptyList()
+                        salaries    = sal.body()?.data ?: emptyList()
                     )
                 }
             } catch (e: Exception) {

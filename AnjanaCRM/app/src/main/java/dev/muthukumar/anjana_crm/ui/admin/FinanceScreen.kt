@@ -252,7 +252,7 @@ fun AdminFinanceScreen(navController: NavController, vm: AdminViewModel = viewMo
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(catExp) },
                             shape = RoundedCornerShape(10.dp), colors = dlgColors()
                         )
-                        ExposedDropdownMenu(expanded = catExp, onDismissRequest = { catExp = false }, containerColor = Color(0xFF1E293B)) {
+                        ExposedDropdownMenu(expanded = catExp, onDismissRequest = { catExp = false }) {
                             (if (txnType=="INCOME") INC_CATS else EXP_CATS).forEach { c ->
                                 DropdownMenuItem(text = { Text(c, color = Color.White) }, onClick = { category = c; catExp = false })
                             }
@@ -292,7 +292,7 @@ fun AdminFinanceScreen(navController: NavController, vm: AdminViewModel = viewMo
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(modeExp) },
                             shape = RoundedCornerShape(10.dp), colors = dlgColors()
                         )
-                        ExposedDropdownMenu(expanded = modeExp, onDismissRequest = { modeExp = false }, containerColor = Color(0xFF1E293B)) {
+                        ExposedDropdownMenu(expanded = modeExp, onDismissRequest = { modeExp = false }) {
                             PAY_MODES.forEach { m ->
                                 DropdownMenuItem(text = { Text(m, color = Color.White) }, onClick = { payMode = m; modeExp = false })
                             }

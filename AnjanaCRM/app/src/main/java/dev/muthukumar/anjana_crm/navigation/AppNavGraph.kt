@@ -29,14 +29,14 @@ fun AppNavGraph() {
 
         composable(Screen.Login.route) {
             LoginScreen(
-                onLoginSuccess = {
-                    val dest = when (vm.uiState.value.navigateTo) {
+                onLoginSuccess = { navigateTo ->
+                    val route = when (navigateTo) {
                         "admin"    -> Screen.AdminDashboard.route
                         "employee" -> Screen.EmployeeDashboard.route
                         "student"  -> Screen.StudentDashboard.route
                         else       -> Screen.AdminDashboard.route
                     }
-                    navController.navigate(dest) {
+                    navController.navigate(route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }

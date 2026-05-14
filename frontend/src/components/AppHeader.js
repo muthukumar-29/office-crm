@@ -39,7 +39,7 @@ const AppHeader = () => {
         </CHeaderToggler>
 
         {/* Brand name in header */}
-        <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#60a5fa', letterSpacing: '-0.01em' }}>
+        <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--brand-primary)', letterSpacing: '-0.01em' }}>
           Anjana Infotech CRM
         </div>
 

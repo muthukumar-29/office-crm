@@ -74,12 +74,12 @@ interface ApiService {
     suspend fun getTransactions(): Response<ApiListResponse<FinanceTransaction>>
 
     @POST("finance/transactions")
-    suspend fun createTransaction(@Body body: Map<String, Any>): Response<ApiResponse<FinanceTransaction>>
+    suspend fun createTransaction(@Body body: Map<String, Any?>): Response<ApiResponse<FinanceTransaction>>
 
     @PATCH("finance/transactions/{id}")
     suspend fun updateTransaction(
         @Path("id") id: Long,
-        @Body body: Map<String, Any>
+        @Body body: Map<String, Any?>
     ): Response<ApiResponse<FinanceTransaction>>
 
     @DELETE("finance/transactions/{id}")
@@ -100,9 +100,6 @@ interface ApiService {
     @GET("salary")
     suspend fun getAllSalaries(): Response<ApiResponse<List<Salary>>>
 
-    @POST("salary")
-    suspend fun createSalary(@Body body: Map<String, Any?>): Response<ApiResponse<Salary>>
-
     @PATCH("salary/{id}/pay")
     suspend fun markSalaryPaid(@Path("id") id: Long): Response<ApiResponse<Salary>>
 
@@ -111,7 +108,7 @@ interface ApiService {
     suspend fun getAllTransactions(
         @Query("start") start: String? = null,
         @Query("end") end: String? = null
-    ): Response<ApiResponse<List<Transaction>>>
+    ): Response<ApiResponse<List<FinanceTransaction>>>
 
     @GET("finance/summary")
     suspend fun getFinanceSummary(
@@ -119,7 +116,5 @@ interface ApiService {
         @Query("end") end: String? = null
     ): Response<ApiResponse<FinanceSummary>>
 
-    @POST("finance/transactions")
-    suspend fun createTransaction(@Body body: Map<String, Any?>): Response<ApiResponse<Transaction>>
 
 }

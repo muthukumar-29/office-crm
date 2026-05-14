@@ -121,7 +121,7 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                             unfocusedLabelColor  = Color(0xFF94A3B8)
                         )
                     )
-                    ExposedDropdownMenu(expanded = empExpanded, onDismissRequest = { empExpanded = false }, containerColor = Color(0xFF1E293B)) {
+                    ExposedDropdownMenu(expanded = empExpanded, onDismissRequest = { empExpanded = false }) {
                         DropdownMenuItem(text = { Text("All Employees", color = Color.White) }, onClick = { filterEmpId = ""; empExpanded = false })
                         state.users.forEach { u ->
                             DropdownMenuItem(text = { Text(u.name, color = Color.White) }, onClick = { filterEmpId = u.id.toString(); empExpanded = false })
@@ -172,7 +172,7 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(empExp) },
                             shape = RoundedCornerShape(10.dp), colors = salDlgColors()
                         )
-                        ExposedDropdownMenu(expanded = empExp, onDismissRequest = { empExp = false }, containerColor = Color(0xFF1E293B)) {
+                        ExposedDropdownMenu(expanded = empExp, onDismissRequest = { empExp = false }) {
                             state.users.forEach { u ->
                                 DropdownMenuItem(text = { Text("${u.name} — ${u.role}", color = Color.White) }, onClick = { empId = u.id.toString(); empExp = false })
                             }
@@ -191,7 +191,7 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(yearExp) },
                                 shape = RoundedCornerShape(10.dp), colors = salDlgColors()
                             )
-                            ExposedDropdownMenu(expanded = yearExp, onDismissRequest = { yearExp = false }, containerColor = Color(0xFF1E293B)) {
+                            ExposedDropdownMenu(expanded = yearExp, onDismissRequest = { yearExp = false }) {
                                 YEARS.forEach { y -> DropdownMenuItem(text = { Text(y, color = Color.White) }, onClick = { selYear = y; yearExp = false }) }
                             }
                         }
@@ -204,7 +204,7 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(monExp) },
                                 shape = RoundedCornerShape(10.dp), colors = salDlgColors()
                             )
-                            ExposedDropdownMenu(expanded = monExp, onDismissRequest = { monExp = false }, containerColor = Color(0xFF1E293B)) {
+                            ExposedDropdownMenu(expanded = monExp, onDismissRequest = { monExp = false }) {
                                 MONTHS.forEach { (v, l) -> DropdownMenuItem(text = { Text(l, color = Color.White) }, onClick = { selMonth = v; monExp = false }) }
                             }
                         }
@@ -250,7 +250,7 @@ fun AdminSalaryScreen(navController: NavController, vm: AdminViewModel = viewMod
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(modeExp) },
                             shape = RoundedCornerShape(10.dp), colors = salDlgColors()
                         )
-                        ExposedDropdownMenu(expanded = modeExp, onDismissRequest = { modeExp = false }, containerColor = Color(0xFF1E293B)) {
+                        ExposedDropdownMenu(expanded = modeExp, onDismissRequest = { modeExp = false }) {
                             PAY_MODES.forEach { m -> DropdownMenuItem(text = { Text(m, color = Color.White) }, onClick = { payMode = m; modeExp = false }) }
                         }
                     }

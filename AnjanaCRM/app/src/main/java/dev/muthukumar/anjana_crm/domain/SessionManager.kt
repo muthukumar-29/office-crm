@@ -16,6 +16,7 @@ class SessionManager(private val store: TokenStore) {
     fun isEmployee(role: String?) = role == "EMPLOYEE" || role == "SUB_ADMIN"
     fun isStudent(role: String?)  = role == "STUDENT"
 
+    fun getRole(): String? = runBlocking { store.role.first() }
     suspend fun getRoleOnce()    = store.role.first()
     suspend fun clear()          = store.clear()
 

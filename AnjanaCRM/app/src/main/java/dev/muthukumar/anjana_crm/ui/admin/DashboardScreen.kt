@@ -193,7 +193,7 @@ fun AdminDashboardScreen(navController: NavController, vm: AdminViewModel = view
                             SectionCard("Salary Overview") {
                                 val paid    = state.salaries.count { it.status == "PAID" }
                                 val pending = state.salaries.count { it.status == "PENDING" }
-                                val total   = state.salaries.sumOf { it.netSalary }
+                                val total   = state.salaries.sumOf { it.netSalary ?: 0.0 }
                                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                                     Column {
                                         Text("Total", fontSize = 11.sp, color = OnSurfaceMuted)

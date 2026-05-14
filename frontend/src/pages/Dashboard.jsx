@@ -81,10 +81,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom row */}
+      {/* Recent Allocations — full width */}
       <div className="row g-3">
-        {/* Recent Activity */}
-        <div className="col-md-6">
+        <div className="col-12">
           <div className="card">
             <div className="card-header d-flex align-items-center justify-content-between">
               <span>Recent Allocations</span>
@@ -100,34 +99,6 @@ export default function Dashboard() {
                     <span className="activity-time">{a.time}</span>
                   </div>
                 ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Links */}
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-header">Quick Actions</div>
-            <div className="card-body">
-              <div className="row g-2">
-                {[
-                  { label: 'Add Student',    icon: '🎓', href: '#/students' },
-                  { label: 'New Allocation', icon: '🔗', href: '#/allocations' },
-                  { label: 'Record Payment', icon: '💳', href: '#/payments' },
-                  { label: 'Issue Certificate', icon: '📜', href: '#/certificates' },
-                  { label: 'Create Invoice', icon: '🧾', href: '#/invoices' },
-                  { label: 'Finance Summary', icon: '📊', href: '#/finance' },
-                ].map((q, i) => (
-                  <div key={i} className="col-6">
-                    <a href={q.href} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 0.75rem', background: 'var(--surface-1)', borderRadius: '8px', border: '1px solid var(--border-subtle)', textDecoration: 'none', color: 'var(--text-secondary)', fontSize: '0.8rem', transition: 'all 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--brand-primary)'}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
-                    >
-                      <span style={{ fontSize: '1.1rem' }}>{q.icon}</span> {q.label}
-                    </a>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>

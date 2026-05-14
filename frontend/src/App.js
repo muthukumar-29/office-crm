@@ -9,7 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 
 import './scss/style.scss'
 import './scss/examples.scss'
-import './scss/custom.scss'   // ← dark theme (make sure file exists in src/scss/)
+import './scss/custom.scss'   // ← light theme overrides
 
 // Lazy pages
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))

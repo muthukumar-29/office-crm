@@ -1,6 +1,7 @@
 // src/pages/Finance.jsx — NEW
 import React, { useEffect, useState, useCallback } from 'react'
 import { recordTransaction, getAllTransactions, getFinanceSummary } from '../api/services/financeService'
+import { getAllCategories } from '../api/services/categoryService'
 import { Preloader, CrmPagination, CrmModal, PageHeader, Field, Badge, EmptyState, StatCard } from '../components/common/ui'
 import { usePagination } from '../utils/usePagination'
 import Toast from '../utils/toast'
@@ -8,18 +9,19 @@ import Toast from '../utils/toast'
 const TODAY = new Date().toISOString().slice(0, 10)
 const MONTH_START = new Date(new Date().getFullYear(), new Date().getMonth(), 2).toISOString().slice(0, 10)
 const MODES = ['CASH', 'UPI', 'BANK_TRANSFER', 'CHEQUE', 'ONLINE']
-const INC_CATS  = ['Student Fee', 'Workshop', 'Consultation', 'Office Project', 'Other Income']
-const EXP_CATS  = ['Salary', 'Rent', 'Utilities', 'Equipment', 'Marketing', 'Travel', 'Miscellaneous']
+const FALLBACK_INC = ['Student Fee', 'Workshop', 'Consultation', 'Office Project', 'Other Income']
+const FALLBACK_EXP = ['Salary', 'Rent', 'Utilities', 'Equipment', 'Marketing', 'Travel', 'Miscellaneous']
 const EMPTY = { type: 'EXPENSE', amount: '', category: '', description: '', paymentMode: 'CASH', transactionDate: TODAY, referenceNo: '', notes: '' }
 
 export default function Finance() {
-  const [txns, setTxns]           = useState([])
-  const [summary, setSummary]     = useState(null)
-  const [loading, setLoading]     = useState(false)
-  const [showModal, setShowModal] = useState(false)
-  const [form, setForm]           = useState(EMPTY)
-  const [typeFilter, setTypeFilter] = useState('')
-  const [dateFilter, setDateFilter] = useState({ start: MONTH_START, end: TODAY })
+  const [txns, setTxns]               = useState([])
+  const [summary, setSummary]         = useState(null)
+  const [loading, setLoading]         = useState(false)
+  const [showModal, setShowModal]     = useState(false)
+  const [form, setForm]               = useState(EMPTY)
+  const [typeFilter, setTypeFilter]   = useState('')
+  const [dateFilter, setDateFilter]   = useState({ start: MONTH_START, end: TODAY })
+  const [dynCategories, setDynCategories] = useState([])
 
   const filtered = typeFilter ? txns.filter(t => t.type === typeFilter) : txns
   const { page, setPage, totalPages, pageData } = usePagination(filtered, 12)
@@ -27,12 +29,15 @@ export default function Finance() {
   const fetchAll = useCallback(async () => {
     setLoading(true)
     try {
-      const [tRes, sRes] = await Promise.all([
+      const [tRes, sRes, cRes] = await Promise.all([
         getAllTransactions({ start: dateFilter.start, end: dateFilter.end }),
         getFinanceSummary(dateFilter.start, dateFilter.end),
+        getAllCategories(),
       ])
       setTxns(tRes.data?.data || tRes.data || [])
       setSummary(sRes.data?.data || sRes.data)
+      const cats = cRes.data?.data || cRes.data || []
+      if (cats.length > 0) setDynCategories(cats.map(c => c.name))
     } catch { Toast.fire({ icon: 'error', title: 'Failed to load finance data' }) }
     finally { setLoading(false) }
   }, [dateFilter])
@@ -55,7 +60,9 @@ export default function Finance() {
     finally { setLoading(false) }
   }
 
-  const cats = form.type === 'INCOME' ? INC_CATS : EXP_CATS
+  const cats = dynCategories.length > 0
+    ? dynCategories
+    : (form.type === 'INCOME' ? FALLBACK_INC : FALLBACK_EXP)
 
   return (
     <div>
